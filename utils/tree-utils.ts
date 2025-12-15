@@ -1,4 +1,3 @@
-
 import { FileNode } from '../types';
 
 export function getAllFileIds(node: FileNode): string[] {
@@ -12,6 +11,17 @@ export function getAllFileIds(node: FileNode): string[] {
         });
     }
     return ids;
+}
+
+export function findNodeById(node: FileNode, id: string): FileNode | null {
+  if (node.id === id) return node;
+  if (node.children) {
+    for (const child of node.children) {
+      const found = findNodeById(child, id);
+      if (found) return found;
+    }
+  }
+  return null;
 }
 
 export function filterTree(node: FileNode, query: string): FileNode | null {

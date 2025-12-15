@@ -1,49 +1,75 @@
 import React from 'react';
 import { useStore } from '../../contexts/StoreContext';
+import { FileCode, Sparkles } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 export const StrategySelector: React.FC = () => {
   const { state, dispatch } = useStore();
 
-  const Option = ({ id, label, desc }: { id: 'precise' | 'conceptual', label: string, desc: string }) => (
-      <div 
-        onClick={() => dispatch({ type: 'SET_STRATEGY', payload: id })}
-        className={cn(
-            "cursor-pointer p-6 rounded-sm border transition-all duration-300 ease-expo group",
-            state.strategy === id 
-                ? "border-primary bg-white/5" 
-                : "border-border hover:border-white/20"
-        )}
-      >
-        <div className="flex justify-between items-start mb-4">
-            <span className={cn(
-                "text-xs font-mono uppercase tracking-widest px-2 py-0.5 rounded-full border",
-                state.strategy === id ? "border-primary text-primary" : "border-border text-secondary"
-            )}>
-                {id}
-            </span>
-            <div className={cn(
-                "w-2 h-2 rounded-full transition-colors",
-                state.strategy === id ? "bg-primary" : "bg-border"
-            )} />
-        </div>
-        <h3 className="text-lg font-medium lowercase mb-1 text-primary">{label}</h3>
-        <p className="text-xs text-secondary leading-relaxed max-w-[90%]">{desc}</p>
-      </div>
-  );
+  const strategies = [
+    {
+      id: 'files' as const,
+      label: 'archivos raw',
+      desc: 'contexto completo sin procesar',
+      icon: <FileCode size={18} strokeWidth={1.5} />
+    },
+    {
+      id: 'conceptual' as const,
+      label: 'resumen ia',
+      desc: 'resúmenes conceptuales (ahorra tokens)',
+      icon: <Sparkles size={18} strokeWidth={1.5} />
+    }
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Option 
-        id="precise" 
-        label="Exact Copy" 
-        desc="Raw content preservation. Best for debugging, patching, and syntax-sensitive tasks." 
-      />
-      <Option 
-        id="conceptual" 
-        label="AI Summary" 
-        desc="Distilled logic via Gemini. Best for high-level architecture queries and large codebases." 
-      />
+    <div>
+      <label className="text-micro text-ink-subtle uppercase tracking-widest block mb-4 font-mono">
+        estrategia de contexto
+      </label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {strategies.map((s) => {
+          const isActive = state.strategy === s.id;
+          return (
+            <button
+              key={s.id}
+              onClick={() => dispatch({ type: 'SET_STRATEGY', payload: s.id })}
+              className={cn(
+                'relative flex items-center gap-4 p-5 rounded-xl border text-left transition-all duration-normal group',
+                isActive
+                  ? 'bg-ink border-ink text-ink-inverted shadow-elevated'
+                  : 'bg-transparent border-stroke text-ink-muted hover:border-stroke-emphasis hover:bg-surface/50'
+              )}
+            >
+              <div className={cn(
+                'w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-normal',
+                isActive
+                  ? 'bg-ink-inverted/20 text-ink-inverted'
+                  : 'bg-surface text-ink-subtle group-hover:text-ink'
+              )}>
+                {s.icon}
+              </div>
+              <div className="flex-1">
+                <div className={cn(
+                  'text-micro font-semibold uppercase tracking-widest mb-1 transition-colors',
+                  isActive ? 'text-ink-inverted' : 'text-ink'
+                )}>
+                  {s.label}
+                </div>
+                <div className={cn(
+                  'text-xs font-light leading-snug lowercase',
+                  isActive ? 'text-ink-inverted/70' : 'text-ink-subtle'
+                )}>
+                  {s.desc}
+                </div>
+              </div>
+
+              {isActive && (
+                <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-status-ready shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };

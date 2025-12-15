@@ -14,4 +14,12 @@ export function formatBytes(bytes: number, decimals = 1) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
-export const glassClass = "bg-gray-900/60 backdrop-blur-md border border-white/5 shadow-xl";
+export function formatNumber(n: number): string {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return n.toString();
+}
+
+export function estimateTokens(bytes: number): number {
+  return Math.ceil(bytes / 4);
+}

@@ -13,7 +13,6 @@ export const AppLayout: React.FC = () => {
     const { state } = useStore();
     const [isSettingsOpen, setSettingsOpen] = React.useState(false);
 
-    // Render active view based on sidebar selection
     const renderMainContent = () => {
         switch (state.activeTab) {
             case 'context': return <ContextPanel />;
@@ -24,20 +23,19 @@ export const AppLayout: React.FC = () => {
     };
 
     return (
-        <div className="flex h-screen bg-background text-primary font-sans selection:bg-white/20 overflow-hidden">
-            {/* Background Grain/Noise can be added here via CSS overlay if desired */}
-            
+        <div className="flex h-screen bg-canvas text-ink font-sans selection:bg-ink selection:text-canvas overflow-hidden antialiased">
+
             <Sidebar onSettings={() => setSettingsOpen(true)} />
-            
+
             {state.projectPath && (
-                <div className="w-72 border-r border-border hidden md:flex flex-col animate-reveal duration-500">
+                <aside className="w-80 border-r border-smoke hidden md:flex flex-col shrink-0 transition-all duration-700 ease-expo bg-canvas/30">
                     <FileExplorer />
-                </div>
+                </aside>
             )}
 
-            <main className="flex-1 flex flex-col min-w-0 relative h-full transition-all duration-700 ease-expo">
+            <main className="flex-1 flex flex-col min-w-0 relative h-full overflow-hidden bg-canvas">
                 <Navbar />
-                <div className="flex-1 overflow-hidden relative">
+                <div className="flex-1 overflow-hidden relative transition-opacity duration-700 ease-expo">
                     {renderMainContent()}
                     <ChatOverlay />
                 </div>

@@ -3,31 +3,13 @@ import { useStore } from '../../contexts/StoreContext';
 import { StrategySelector } from './StrategySelector';
 import { FileCard } from './FileCard';
 import { ActionDock } from './ActionDock';
-import { ArrowUpRight, Sparkles, Folder, FileText, Zap } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, Sparkles, Folder, FileText, Zap, ChevronDown } from 'lucide-react';
 import { Bridge } from '../../services/bridge';
 import { useToast } from '../../contexts/ToastContext';
 import { Button } from '../ui/Button';
 import type { FileNode } from '../../types';
-
-// Heuristica: ~4 caracteres = 1 token
-const estimateTokens = (bytes: number): number => Math.ceil(bytes / 4);
-
-const findNodeById = (node: FileNode, id: string): FileNode | null => {
-  if (node.id === id) return node;
-  if (node.children) {
-    for (const child of node.children) {
-      const found = findNodeById(child, id);
-      if (found) return found;
-    }
-  }
-  return null;
-};
-
-const formatNumber = (n: number): string => {
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
-  return n.toString();
-};
+import { estimateTokens, formatNumber } from '../../utils/cn';
+import { findNodeById } from '../../utils/tree-utils';
 
 export const Dashboard: React.FC = () => {
   const { state, dispatch } = useStore();
@@ -39,7 +21,6 @@ export const Dashboard: React.FC = () => {
     [state.selectedFileIds]
   );
 
-  // Calcular metricas reales
   const { totalSize, totalTokens, fileCount } = useMemo(() => {
     if (!state.tree?.root) return { totalSize: 0, totalTokens: 0, fileCount: 0 };
 
@@ -85,14 +66,12 @@ export const Dashboard: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      // Construir payload de contexto
       let contextPayload = '';
       for (const id of selectedFiles) {
         const content = await Bridge.GetFileContent(id);
         contextPayload += `<file path="${id}">\n${content}\n</file>\n\n`;
       }
 
-      // Construir prompt final
       const systemPrompt = `Eres un asistente experto en desarrollo de software.
 El usuario te proporciona archivos de codigo como contexto y un objetivo.
 Analiza el contexto y genera una solucion completa.
@@ -108,9 +87,8 @@ Por favor, genera una solucion completa que incluya:
 3. Nuevos archivos si son necesarios
 4. Comandos de terminal si aplica`;
 
-      // Copiar al clipboard
       await navigator.clipboard.writeText(`${systemPrompt}\n\n${fullPrompt}`);
-      addToast('success', 'Prompt copiado al clipboard');
+      addToast('success', 'Prompt copiado al portapapeles');
 
     } catch (err) {
       addToast('error', 'Error al generar prompt');
@@ -119,110 +97,132 @@ Por favor, genera una solucion completa que incluya:
     }
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // HERO STATE (Sin proyecto)
+  // ═══════════════════════════════════════════════════════════
   if (!state.projectPath) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center animate-reveal bg-background">
-        <h1 className="text-4xl md:text-5xl font-semibold tracking-tighter lowercase mb-6 text-primary">
-          contexto dev<br />simplificado.
-        </h1>
-        <p className="text-sm text-secondary max-w-sm mb-12 font-light tracking-wide lowercase">
-          selecciona archivos. genera contexto. prompta tu llm.<br />
-          workflow sin friccion para desarrolladores.
-        </p>
-        <button
-          onClick={handleOpen}
-          disabled={state.isLoading}
-          className="group flex items-center gap-2 text-sm font-medium border-b border-primary pb-1 hover:opacity-50 transition-opacity disabled:opacity-50"
-        >
-          {state.isLoading ? 'cargando...' : 'abrir_repositorio'}
-          <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-        </button>
+      <div className="flex-1 flex flex-col h-full bg-canvas relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-surface rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 -z-10 opacity-40" />
+
+        {/* Spacer */}
+        <div className="flex-grow" />
+
+        {/* Main content */}
+        <div className="flex flex-col md:flex-row justify-between items-end w-full px-8 md:px-12 pb-8 md:pb-12 border-b border-stroke">
+          {/* Left: Description + CTA */}
+          <div className="animate-reveal mb-8 md:mb-0 w-full md:w-auto">
+            <p className="text-sm font-normal leading-relaxed text-ink-subtle lowercase max-w-xs tracking-wide mb-8">
+              constructor de contexto para llms. selecciona archivos,
+              define tu objetivo, genera prompts estructurados.
+            </p>
+
+            <button
+              onClick={handleOpen}
+              disabled={state.isLoading}
+              className="group inline-flex items-center gap-2 text-micro font-medium uppercase tracking-widest border-b border-stroke pb-1 transition-all duration-normal hover:border-ink hover:text-ink-muted disabled:opacity-50"
+            >
+              {state.isLoading ? 'cargando...' : 'abrir repositorio'}
+              <ArrowUpRight
+                size={14}
+                className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-normal"
+              />
+            </button>
+          </div>
+
+          {/* Right: Headline */}
+          <div className="text-left md:text-right animate-reveal delay-100">
+            <h1 className="text-display lowercase leading-[0.85] font-semibold text-ink tracking-tighter">
+              contexto<br />
+              simplificado<br />
+              <span className="text-ink-subtle">one-shot</span>
+            </h1>
+          </div>
+        </div>
+
+        {/* Bottom status bar */}
+        <div className="w-full px-8 md:px-12 py-6 flex justify-between items-center animate-reveal delay-200">
+          <div className="flex gap-8">
+            <span className="text-xs font-medium lowercase flex items-center gap-2">
+              <span className="w-2 h-2 bg-status-ready rounded-full animate-pulse" />
+              listo para trabajar
+            </span>
+          </div>
+
+          <div className="text-micro text-ink-subtle uppercase tracking-widest animate-pulse-subtle">
+            selecciona un proyecto
+          </div>
+        </div>
       </div>
     );
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // WORKSPACE STATE (Con proyecto)
+  // ═══════════════════════════════════════════════════════════
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-background relative">
-      <div className="flex-1 overflow-y-auto p-8 md:p-12 pb-32 custom-scrollbar">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-canvas relative">
+      <div className="flex-1 overflow-y-auto p-8 md:p-12 pb-32 scrollbar-hidden">
 
-        {/* Intent-First Hero Section */}
-        <section className="mb-12 border border-border rounded-xl p-8 bg-surface/30">
-          <label className="text-[10px] text-secondary uppercase tracking-widest block mb-3">
-            Objetivo
+        {/* Objetivo Section */}
+        <section className="mb-12 animate-reveal">
+          <label className="text-micro text-ink-subtle uppercase tracking-widest block mb-4 font-mono">
+            objetivo
           </label>
-          <textarea
-            value={state.intent}
-            onChange={(e) => dispatch({ type: 'SET_INTENT', payload: e.target.value })}
-            placeholder="Describe lo que quieres lograr con el codigo seleccionado..."
-            className="w-full bg-transparent text-primary text-lg font-light placeholder:text-border resize-none border-none focus:outline-none focus:ring-0 min-h-[100px]"
-          />
-
-          {/* Budget + Generate Row */}
-          <div className="flex items-center justify-between mt-6 pt-6 border-t border-border">
-            <div className="flex items-center gap-4">
-              <span className="text-[10px] text-secondary uppercase tracking-widest">Presupuesto:</span>
-              <select
-                value={state.budgetTokens}
-                onChange={(e) => dispatch({ type: 'SET_BUDGET', payload: Number(e.target.value) })}
-                className="bg-surface border border-border rounded px-3 py-1.5 text-sm text-primary focus:outline-none focus:border-primary"
-              >
-                <option value={25000}>25k tokens</option>
-                <option value={50000}>50k tokens</option>
-                <option value={100000}>100k tokens</option>
-                <option value={128000}>128k tokens</option>
-                <option value={200000}>200k tokens</option>
-              </select>
-            </div>
-
-            <Button
-              variant="primary"
-              onClick={handleGenerate}
-              disabled={fileCount === 0 || isGenerating}
-              isLoading={isGenerating}
-              className="px-8"
-            >
-              <Sparkles size={16} className="mr-2" />
-              Generar One-Shot
-            </Button>
+          <div className="group relative">
+            <textarea
+              value={state.intent}
+              onChange={(e) => dispatch({ type: 'SET_INTENT', payload: e.target.value })}
+              placeholder="¿Qué quieres lograr con el código seleccionado?"
+              className="w-full bg-transparent text-ink text-lg font-light placeholder:text-ink-subtle/50 placeholder:font-light resize-none border border-stroke rounded-large focus:outline-none focus:border-ink p-6 min-h-[140px] leading-relaxed transition-all duration-normal"
+            />
           </div>
         </section>
 
         {/* Stats Bar */}
-        <section className="mb-8">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-surface/50 rounded-lg p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <FileText size={18} className="text-primary" />
-              </div>
-              <div>
-                <span className="text-2xl font-mono text-primary">{fileCount}</span>
-                <span className="text-xs text-secondary block">archivos</span>
-              </div>
-            </div>
-
-            <div className="bg-surface/50 rounded-lg p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Zap size={18} className="text-primary" />
-              </div>
-              <div>
-                <span className={`text-2xl font-mono ${isOverBudget ? 'text-red-400' : 'text-primary'}`}>
-                  {formatNumber(totalTokens)}
-                </span>
-                <span className="text-xs text-secondary block">tokens (est.)</span>
+        <section className="mb-12 animate-reveal delay-100">
+          <div className="grid grid-cols-3 gap-4 md:gap-6">
+            {/* Files Card */}
+            <div className="border border-stroke rounded-xl p-5 bg-transparent hover:border-stroke-emphasis transition-all duration-slow group">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-slow">
+                  <FileText size={18} className="text-ink" strokeWidth={1.5} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-2xl md:text-3xl font-light text-ink tracking-tight">{fileCount}</div>
+                  <div className="text-micro text-ink-subtle uppercase tracking-widest font-mono">archivos</div>
+                </div>
               </div>
             </div>
 
-            <div className="bg-surface/50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-secondary">Uso del presupuesto</span>
-                <span className={`text-xs font-mono ${isOverBudget ? 'text-red-400' : 'text-primary'}`}>
+            {/* Tokens Card */}
+            <div className="border border-stroke rounded-xl p-5 bg-transparent hover:border-stroke-emphasis transition-all duration-slow group">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-slow">
+                  <Zap size={18} className="text-ink" strokeWidth={1.5} />
+                </div>
+                <div className="min-w-0">
+                  <div className={`text-2xl md:text-3xl font-light tracking-tight ${isOverBudget ? 'text-status-error' : 'text-ink'}`}>
+                    {formatNumber(totalTokens)}
+                  </div>
+                  <div className="text-micro text-ink-subtle uppercase tracking-widest font-mono">tokens</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Budget Card */}
+            <div className="border border-stroke rounded-xl p-5 bg-transparent hover:border-stroke-emphasis transition-all duration-slow group flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-micro text-ink-subtle uppercase tracking-widest font-mono">presupuesto</span>
+                <span className={`text-xs font-mono ${isOverBudget ? 'text-status-error' : 'text-ink'}`}>
                   {usagePercent.toFixed(0)}%
                 </span>
               </div>
-              <div className="w-full bg-background h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-surface h-1.5 rounded-full overflow-hidden">
                 <div
-                  className={`h-full transition-all duration-500 rounded-full ${
-                    isOverBudget ? 'bg-red-400' : usagePercent > 80 ? 'bg-yellow-400' : 'bg-primary'
+                  className={`h-full transition-all duration-reveal ease-expo-out ${
+                    isOverBudget ? 'bg-status-error' : usagePercent > 80 ? 'bg-status-warning' : 'bg-ink'
                   }`}
                   style={{ width: `${Math.min(usagePercent, 100)}%` }}
                 />
@@ -231,23 +231,63 @@ Por favor, genera una solucion completa que incluya:
           </div>
         </section>
 
+        {/* Budget Selector + Generate Button */}
+        <section className="mb-12 animate-reveal delay-200">
+          <div className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <label className="text-micro text-ink-subtle uppercase tracking-widest font-mono">
+                límite:
+              </label>
+              <div className="relative">
+                <select
+                  value={state.budgetTokens}
+                  onChange={(e) => dispatch({ type: 'SET_BUDGET', payload: Number(e.target.value) })}
+                  className="appearance-none bg-transparent border-b border-stroke pl-2 pr-8 py-1 text-sm text-ink font-mono focus:outline-none focus:border-ink cursor-pointer hover:border-stroke-emphasis transition-colors duration-normal"
+                >
+                  <option value={25000}>25k</option>
+                  <option value={50000}>50k</option>
+                  <option value={100000}>100k</option>
+                  <option value={128000}>128k</option>
+                  <option value={200000}>200k</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-ink-subtle">
+                  <ChevronDown size={14} />
+                </div>
+              </div>
+            </div>
+
+            <Button
+              variant="primary"
+              shape="pill"
+              size="lg"
+              onClick={handleGenerate}
+              disabled={fileCount === 0 || isGenerating}
+              isLoading={isGenerating}
+              icon={!isGenerating ? <Sparkles size={16} /> : undefined}
+              className="shadow-elevated hover:shadow-prominent"
+            >
+              generar one-shot
+            </Button>
+          </div>
+        </section>
+
         {/* Strategy Selector */}
-        <section className="mb-8">
+        <section className="mb-12 animate-reveal delay-300">
           <StrategySelector />
         </section>
 
-        {/* Selected Files */}
+        {/* Selected Files Grid */}
         {fileCount > 0 && (
-          <section className="animate-reveal">
+          <section className="animate-slide-up">
             <div className="flex items-center justify-between mb-6">
-              <span className="text-[10px] font-medium text-secondary uppercase tracking-widest">
-                Archivos seleccionados
+              <span className="text-micro font-mono text-ink-subtle uppercase tracking-widest">
+                contexto seleccionado
               </span>
               <button
                 onClick={() => dispatch({ type: 'CLEAR_SELECTION' })}
-                className="text-[10px] text-secondary hover:text-red-400 transition-colors uppercase tracking-widest border-b border-transparent hover:border-red-400"
+                className="text-micro text-ink-subtle hover:text-status-error transition-colors duration-normal uppercase tracking-widest pb-0.5 border-b border-transparent hover:border-status-error/50 font-mono"
               >
-                limpiar
+                limpiar todo
               </button>
             </div>
 
@@ -260,9 +300,14 @@ Por favor, genera una solucion completa que incluya:
         )}
 
         {fileCount === 0 && (
-          <section className="text-center py-12 text-secondary">
-            <Folder size={48} className="mx-auto mb-4 opacity-30" />
-            <p className="text-sm">Selecciona archivos desde el arbol para comenzar</p>
+          <section className="text-center py-20 animate-fade-in">
+            <Folder size={56} className="mx-auto mb-6 text-stroke" strokeWidth={1} />
+            <p className="text-lg font-light text-ink-subtle lowercase tracking-tight">
+              selecciona archivos del explorador
+            </p>
+            <p className="text-sm text-ink-subtle/60 mt-2 lowercase">
+              usa el panel izquierdo para navegar tu proyecto
+            </p>
           </section>
         )}
       </div>

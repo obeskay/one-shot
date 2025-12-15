@@ -1,12 +1,36 @@
 export type ContextStrategy = 'precise' | 'conceptual';
 
+export type ProviderType = 'gemini' | 'anthropic' | 'openai' | 'openrouter' | 'local-cli';
+
+export interface ProviderConfig {
+    id: ProviderType;
+    name: string;
+    description: string;
+    requiresApiKey: boolean;
+    baseURL?: string;
+    models: ModelConfig[];
+    icon: string;
+}
+
+export interface ModelConfig {
+    id: string;
+    name: string;
+    description: string;
+    maxTokens: number;
+    canThink?: boolean;
+    canSearch?: boolean;
+}
+
 export interface AIConfig {
-    provider: string;
+    provider: ProviderType;
     model: string;
+    apiKey: string;
+    baseURL?: string;
     temperature: number;
     systemInstruction: string;
     useThinking: boolean;
     useGrounding: boolean;
+    isConfigured: boolean;
 }
 
 export interface PromptRunResult {

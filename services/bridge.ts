@@ -9,6 +9,7 @@ import type {
   PromptRunResultDTO,
   treeDTOToLegacy,
 } from '../types/domain';
+import { isString, logInvalidEvent } from './event-validators';
 
 // Declaraciones de tipos para Wails bindings
 declare global {
@@ -23,8 +24,12 @@ declare global {
           ReadFileWithLimit(relPath: string, projectPath: string, maxBytes: number): Promise<[string, boolean]>;
           GetPlatform(): Promise<string>;
           CancelJob(jobId: string): Promise<void>;
+          GetJobStatus(jobId: string): Promise<import('../types/domain').JobProgressDTO>;
           BuildContext(selection: SelectionDTO, options: ContextBuildOptionsDTO, projectPath: string): Promise<ContextPayloadDTO>;
+          ConfigureLLM(provider: string, apiKey: string, baseURL: string): Promise<void>;
           RunPrompt(spec: PromptRunSpecDTO): Promise<PromptRunResultDTO>;
+          StreamPrompt(spec: PromptRunSpecDTO): Promise<string>; // Retorna jobId
+          StopStream(jobId: string): Promise<void>;
         };
       };
     };
@@ -125,14 +130,25 @@ const MockBridge = {
     _config: AIConfig,
     _fileIds: string[],
     _messages: ChatMessage[],
-    onToken: (token: string) => void
+    onToken: (token: string) => void,
+    onComplete?: () => void,
+    onError?: (error: string) => void
   ): { stop: () => void } {
     console.warn('[Bridge] Modo mock: StreamChat');
     let active = true;
     setTimeout(() => {
-      if (active) onToken('Mock response: Backend no disponible.');
+      if (active) {
+        onToken('Mock response: Backend no disponible.');
+        if (onComplete) onComplete();
+      }
     }, 100);
     return { stop: () => { active = false; } };
+  },
+
+  async ConfigureLLM(provider: string, apiKey: string, baseURL: string = ''): Promise<void> {
+    console.warn('[Bridge] Modo mock: ConfigureLLM', { provider, hasKey: !!apiKey, baseURL });
+    // Simular delay de configuración
+    await new Promise(resolve => setTimeout(resolve, 500));
   },
 };
 
@@ -223,18 +239,53 @@ const WailsBridge = {
     config: AIConfig,
     fileIds: string[],
     messages: ChatMessage[],
-    onToken: (token: string) => void
+    onToken: (token: string) => void,
+    onComplete?: () => void,
+    onError?: (error: string) => void
   ): { stop: () => void } {
-    let cleanup: (() => void) | null = null;
+    let tokenCleanup: (() => void) | null = null;
+    let completeCleanup: (() => void) | null = null;
+    let errorCleanup: (() => void) | null = null;
+    let currentJobId: string | null = null;
 
-    // Escuchar eventos de tokens
-    cleanup = window.runtime.EventsOn('chat:token', (token: unknown) => {
-      if (typeof token === 'string') {
-        onToken(token);
+    console.log('[Bridge] StreamChat iniciando con config:', config.provider, config.model);
+
+    // Listener: chat:token
+    tokenCleanup = window.runtime.EventsOn('chat:token', (token: unknown) => {
+      if (!isString(token)) {
+        logInvalidEvent('chat:token', token);
+        return;
       }
+      console.log('[Bridge] Token recibido:', token.substring(0, 50));
+      onToken(token);
     });
 
-    // Iniciar streaming (fire and forget)
+    // Listener: chat:complete
+    completeCleanup = window.runtime.EventsOn('chat:complete', (jobId: unknown) => {
+      console.log('[Bridge] Streaming completado, jobId:', jobId);
+      if (onComplete) onComplete();
+      // Cleanup automatico
+      if (tokenCleanup) tokenCleanup();
+      if (completeCleanup) completeCleanup();
+      if (errorCleanup) errorCleanup();
+    });
+
+    // Listener: chat:error
+    errorCleanup = window.runtime.EventsOn('chat:error', (errorMsg: unknown) => {
+      if (!isString(errorMsg)) {
+        logInvalidEvent('chat:error', errorMsg);
+        if (onError) onError('Error desconocido');
+        return;
+      }
+      console.error('[Bridge] Error en streaming:', errorMsg);
+      if (onError) onError(errorMsg);
+      // Cleanup automatico
+      if (tokenCleanup) tokenCleanup();
+      if (completeCleanup) completeCleanup();
+      if (errorCleanup) errorCleanup();
+    });
+
+    // Construir spec con contexto de archivos seleccionados
     const spec: PromptRunSpecDTO = {
       provider: config.provider as 'openai' | 'gemini' | 'openrouter',
       model: config.model,
@@ -245,38 +296,69 @@ const WailsBridge = {
       })),
     };
 
-    // TODO: En Fase 5, llamar a metodo de streaming del backend
-    // Por ahora, simular con RunPrompt
-    window.go.app.App.RunPrompt(spec)
-      .then(result => {
-        // Simular streaming palabra por palabra
-        const words = result.text.split(' ');
-        let i = 0;
-        const interval = setInterval(() => {
-          if (i < words.length) {
-            onToken(words[i] + ' ');
-            i++;
-          } else {
-            clearInterval(interval);
-            window.runtime.EventsEmit('chat:complete', result.runId);
-          }
-        }, 50);
+    // Llamar a StreamPrompt real del backend
+    window.go.app.App.StreamPrompt(spec)
+      .then(jobId => {
+        currentJobId = jobId;
+        console.log('[Bridge] Streaming iniciado, jobId:', jobId);
       })
       .catch(err => {
-        onToken(`Error: ${err.message}`);
-        window.runtime.EventsEmit('chat:complete', '');
+        console.error('[Bridge] Error iniciando streaming:', err);
+        if (onError) onError(err.message || 'Error al iniciar streaming');
+        // Cleanup en caso de fallo al iniciar
+        if (tokenCleanup) tokenCleanup();
+        if (completeCleanup) completeCleanup();
+        if (errorCleanup) errorCleanup();
       });
 
     return {
       stop: () => {
-        if (cleanup) cleanup();
-        // TODO: Cancelar job en backend
+        console.log('[Bridge] Deteniendo streaming, jobId:', currentJobId);
+        if (currentJobId) {
+          window.go.app.App.StopStream(currentJobId).catch(err => {
+            console.error('[Bridge] Error deteniendo stream:', err);
+          });
+        }
+        // Cleanup manual de listeners
+        if (tokenCleanup) tokenCleanup();
+        if (completeCleanup) completeCleanup();
+        if (errorCleanup) errorCleanup();
       },
     };
   },
 
   async CancelJob(jobId: string): Promise<void> {
-    await window.go.app.App.CancelJob(jobId);
+    console.log('[Bridge] Cancelando job:', jobId);
+    try {
+      await window.go.app.App.CancelJob(jobId);
+      console.log('[Bridge] Job cancelado exitosamente');
+    } catch (err) {
+      console.error('[Bridge] Error cancelando job:', err);
+      throw err;
+    }
+  },
+
+  async GetJobStatus(jobId: string): Promise<import('../types/domain').JobProgressDTO> {
+    console.log('[Bridge] Obteniendo estado de job:', jobId);
+    try {
+      const status = await window.go.app.App.GetJobStatus(jobId);
+      console.log('[Bridge] Estado del job:', status.state, status.stage);
+      return status;
+    } catch (err) {
+      console.error('[Bridge] Error obteniendo estado de job:', err);
+      throw err;
+    }
+  },
+
+  async ConfigureLLM(provider: string, apiKey: string, baseURL: string = ''): Promise<void> {
+    console.log('[Bridge] Configurando LLM provider:', provider);
+    try {
+      await window.go.app.App.ConfigureLLM(provider, apiKey, baseURL);
+      console.log('[Bridge] LLM configurado exitosamente');
+    } catch (err) {
+      console.error('[Bridge] Error configurando LLM:', err);
+      throw err;
+    }
   },
 
   async GetPlatform(): Promise<string> {
@@ -302,7 +384,32 @@ export const WailsExtras = isWailsEnvironment() ? {
   GetFileContentWithLimit: WailsBridge.GetFileContentWithLimit,
   BuildContext: WailsBridge.BuildContext,
   CancelJob: WailsBridge.CancelJob,
+  GetJobStatus: WailsBridge.GetJobStatus,
+  ConfigureLLM: WailsBridge.ConfigureLLM,
   GetPlatform: WailsBridge.GetPlatform,
   getCurrentProjectPath: WailsBridge.getCurrentProjectPath,
   setCurrentProjectPath: WailsBridge.setCurrentProjectPath,
 } : null;
+
+// Helpers para manejo robusto de eventos
+export function createEventListener<T = unknown>(
+  eventName: string,
+  handler: (data: T) => void,
+  validator?: (data: unknown) => data is T
+): () => void {
+  if (!isWailsEnvironment()) {
+    console.warn(`[Bridge] EventListener "${eventName}" en modo mock`);
+    return () => {};
+  }
+
+  const cleanup = window.runtime.EventsOn(eventName, (data: unknown) => {
+    if (validator && !validator(data)) {
+      console.error(`[Bridge] Evento "${eventName}" con datos invalidos:`, data);
+      return;
+    }
+    handler(data as T);
+  });
+
+  console.log(`[Bridge] Listener registrado para evento: ${eventName}`);
+  return cleanup;
+}

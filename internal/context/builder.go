@@ -20,6 +20,11 @@ func NewBuilder(rootPath string) *Builder {
 	}
 }
 
+// ProjectPath retorna el path raíz del proyecto
+func (b *Builder) ProjectPath() string {
+	return b.rootPath
+}
+
 // Build construye el payload de contexto desde una seleccion
 func (b *Builder) Build(selection domain.SelectionDTO, opts domain.ContextBuildOptionsDTO) (*domain.ContextPayloadDTO, error) {
 	if len(selection.SelectedIds) == 0 {

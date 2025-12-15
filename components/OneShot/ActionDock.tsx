@@ -34,9 +34,9 @@ export const ActionDock: React.FC = () => {
         try {
             const payload = await buildPayload();
             await copyToClipboard(payload);
-            addToast('success', `Copied ${count} files`);
+            addToast('success', `${count} archivos copiados`);
         } catch (e) {
-            addToast('error', 'Failed to copy');
+            addToast('error', 'Error al copiar');
         } finally {
             setTimeout(() => setIsCopying(false), 1000);
         }
@@ -44,43 +44,55 @@ export const ActionDock: React.FC = () => {
 
     return (
         <>
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 animate-reveal">
-                <div className="glass-panel p-1.5 rounded-full flex items-center gap-2 shadow-2xl">
-                    
-                    <button 
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-pill border border-stroke bg-canvas/90 backdrop-medium shadow-float transition-all duration-slow hover:border-stroke-emphasis hover:shadow-prominent">
+
+                    {/* Preview button */}
+                    <button
                         onClick={() => setIsPreviewOpen(true)}
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-secondary hover:text-primary hover:bg-white/10 transition-colors"
-                        title="Preview"
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-ink-subtle hover:text-ink hover:bg-surface transition-all duration-normal active:scale-95"
+                        title="Vista previa"
+                        aria-label="Vista previa del payload"
                     >
-                        <Eye size={18} strokeWidth={1.5} />
+                        <Eye size={18} strokeWidth={1.5} aria-hidden="true" />
                     </button>
 
-                    <div className="w-px h-4 bg-white/10 mx-1"></div>
+                    <div className="w-px h-5 bg-stroke mx-1" />
 
-                    <Button 
+                    {/* Copy button */}
+                    <Button
                         variant="primary"
+                        shape="pill"
+                        size="md"
                         onClick={handleCopy}
-                        className="rounded-full px-6 h-10 min-w-[140px]"
                         isLoading={isCopying}
-                        icon={!isCopying && <Copy size={14} />}
+                        icon={isCopying ? <Check size={14} /> : <Copy size={14} />}
+                        className="min-w-[140px] shadow-base hover:shadow-elevated"
+                        aria-label={`Copiar ${count} archivos al portapapeles`}
                     >
-                        {isCopying ? "Done" : "Copy"}
-                        {!isCopying && <span className="ml-2 opacity-50 text-[10px]">{count}</span>}
+                        {isCopying ? 'copiado' : 'copiar contexto'}
+                        {!isCopying && (
+                            <span className="ml-2 opacity-60 text-micro">{count}</span>
+                        )}
                     </Button>
 
-                    <Button
-                        variant="secondary"
+                    <div className="w-px h-5 bg-stroke mx-1" />
+
+                    {/* Chat button */}
+                    <button
                         onClick={() => dispatch({ type: 'TOGGLE_CHAT', payload: true })}
-                        className="rounded-full w-10 h-10 p-0 border-transparent bg-white/5 hover:bg-white/10 text-primary"
-                        icon={<Terminal size={16} />}
-                    />
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-ink-subtle hover:text-ink hover:bg-surface transition-all duration-normal active:scale-95"
+                        aria-label="Abrir chat de IA"
+                    >
+                        <Terminal size={18} strokeWidth={1.5} />
+                    </button>
                 </div>
             </div>
 
-            <PreviewModal 
-                isOpen={isPreviewOpen} 
-                onClose={() => setIsPreviewOpen(false)} 
-                buildPayload={buildPayload} 
+            <PreviewModal
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                buildPayload={buildPayload}
             />
         </>
     );

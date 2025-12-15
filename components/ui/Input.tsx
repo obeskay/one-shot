@@ -9,14 +9,14 @@ export const Input: React.FC<InputProps> = ({ className, icon, ...props }) => {
   return (
     <div className="relative group">
       {icon && (
-        <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none text-secondary group-focus-within:text-primary transition-colors">
+        <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none text-ash group-focus-within:text-ink transition-colors duration-300">
           {icon}
         </div>
       )}
       <input
         className={cn(
-          "block w-full bg-transparent border-b border-border py-2 text-primary placeholder-zinc-700 focus:outline-none focus:border-primary transition-colors font-mono text-sm rounded-none",
-          icon ? "pl-6" : "",
+          "block w-full bg-transparent border-b border-smoke py-2 text-ink placeholder-ash/50 placeholder:font-light focus:outline-none focus:border-ink transition-all duration-300 font-mono text-sm rounded-none",
+          icon ? "pl-8" : "",
           className
         )}
         {...props}
