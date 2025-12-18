@@ -1,188 +1,69 @@
-# one-shot
+# One-Shot
 
-> Context builder for LLMs – generate structured prompts from your codebase in one shot
+**Context Builder for Large Language Models.**
 
-<div align="center">
+One-Shot is a developer tool designed to streamline the process of creating context payloads for LLMs. Instead of manually copying and pasting files across your codebase, One-Shot allows you to visualize your project structure, select relevant files, and generate a structured, optimized prompt in seconds.
 
-![one-shot](https://img.shields.io/badge/one--shot-v0.1.0-black?style=flat-square)
-![react](https://img.shields.io/badge/react-19-61dafb?style=flat-square)
-![tailwind](https://img.shields.io/badge/tailwind-v4-38bdf8?style=flat-square)
-![wails](https://img.shields.io/badge/wails-go-00add8?style=flat-square)
-![license](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+## Features
 
-</div>
+- **Visual File Explorer**: Navigate your project tree intuitively.
+- **Selective Context**: Pick only the files that matter for your current task.
+- **Token Budgeting**: Monitor your token usage in real-time against model limits.
+- **Multi-Provider Support**: Compatible with OpenAI, Anthropic, Google Gemini, and local models.
+- **Privacy First**: Your code stays local. API keys are stored securely on your machine.
 
-## 📸 screenshots
+## Installation
 
-<div align="center">
-  <img src="assets/screenshots/dashboard.png" alt="one-shot dashboard" width="100%" style="border-radius: 12px; border: 1px solid #27272a;">
-  <p><em>main dashboard – manage context and prompts</em></p>
-</div>
+### Prerequisites
 
-<br/>
+- [Go](https://go.dev/) 1.21+
+- [Node.js](https://nodejs.org/) 20+
+- [Wails](https://wails.io/) v2
 
-<div align="center">
-  <img src="assets/screenshots/setup.png" alt="one-shot setup wizard" width="70%" style="border-radius: 12px; border: 1px solid #27272a;">
-  <p><em>setup wizard – configure ai providers</em></p>
-</div>
+### Build from Source
 
-<div align="center">
-  <strong>stop copy-pasting files manually. curate context visually.</strong>
-</div>
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/obeskay/one-shot.git
+   cd one-shot
+   ```
 
----
+2. **Install frontend dependencies**
+   ```bash
+   npm install
+   ```
 
-## ✨ what it does
+3. **Run in development mode**
+   ```bash
+   wails dev
+   ```
 
-one-shot is a desktop app that lets developers build structured context payloads for large language models (LLMs). select files from your project, define your goal, and get an optimized prompt ready to paste.
+4. **Build for production**
+   ```bash
+   wails build
+   ```
+   The compiled binary will be available in the `build/bin` directory.
 
-### features
+## Usage
 
-- 🗂️ **file explorer** – browse your project and pick relevant files
-- 🎯 **strategy modes** – raw content or AI-powered summaries
-- 👁️ **live preview** – see your payload before copying
-- 💬 **integrated chat** – interact with LLMs using selected context
-- 🔌 **multi-provider** – anthropic, google, openai, and local models
+1. Open One-Shot.
+2. Select your target project directory.
+3. Browse the file tree and select the files relevant to your task.
+4. (Optional) Enter your prompt or intent in the dashboard.
+5. Click **Generate One-Shot** to copy the formatted context to your clipboard.
 
----
+## Tech Stack
 
-## 🛠️ stack
+Built with performance and native experience in mind:
 
-| layer    | tech                                     |
-|----------|------------------------------------------|
-| frontend | react 19, typescript, tailwind css v4    |
-| backend  | go, wails v2                             |
-| design   | custom monochromatic design system       |
+- **Backend**: Go (via Wails)
+- **Frontend**: React 19, TypeScript
+- **Styling**: Tailwind CSS v4
 
----
+## Contributing
 
-## 🚀 quick start
+Contributions are welcome. Please ensure your code follows the project's structure and includes relevant tests.
 
-### prerequisites
+## License
 
-- [go](https://golang.org/) 1.21+
-- [node.js](https://nodejs.org/) 20+
-- [wails](https://wails.io/) v2
-
-### development
-
-```bash
-# clone
-git clone https://github.com/obeskay/one-shot.git
-cd one-shot
-
-# install frontend deps
-npm install
-
-# run dev mode
-wails dev
-```
-
-### production build
-
-```bash
-# build for your platform
-wails build
-
-# binary output: build/bin/
-```
-
----
-
-## 🎨 design system
-
-one-shot uses semantic design tokens built on tailwind v4:
-
-### colors
-
-```css
-/* surfaces */
---color-canvas: #09090b      /* main bg */
---color-surface: #18181b     /* cards */
---color-surface-elevated: #27272a
-
-/* text */
---color-ink: #fafafa         /* primary text */
---color-ink-muted: #a1a1aa   /* secondary */
---color-ink-subtle: #71717a  /* subtle */
-
-/* status */
---color-status-ready: #10b981
---color-status-error: #ef4444
-```
-
-### typography
-
-- display: `clamp(2.5rem, 6vw, 4.5rem)` – hero headlines
-- micro: `0.625rem` with `letter-spacing: 0.1em` – labels
-- monospace font stack for code
-
-### motion
-
-- expo-out easing: `cubic-bezier(0.16, 1, 0.3, 1)`
-- reveal animation: `translateY(20px) → 0` with staggered delays
-
----
-
-## 📁 project structure
-
-```
-one-shot/
-├── components/
-│   ├── features/         # domain components
-│   │   ├── Chat/
-│   │   ├── Context/
-│   │   ├── Settings/
-│   │   └── Tree/
-│   ├── Layout/           # main layout
-│   ├── OneShot/          # core components
-│   └── ui/               # design system primitives
-├── contexts/             # react context providers
-├── hooks/                # custom hooks
-├── internal/             # go backend
-│   ├── app/
-│   ├── context/
-│   ├── domain/
-│   └── llm/
-├── services/             # frontend-backend bridge
-├── utils/                # utilities
-├── index.css             # tailwind v4 tokens
-└── App.tsx
-```
-
----
-
-## ⚙️ ai providers
-
-| provider    | api key required | models                                |
-|-------------|------------------|---------------------------------------|
-| anthropic   | yes              | claude-3.5-sonnet, claude-3-opus      |
-| google      | yes              | gemini-2.0-flash, gemini-1.5-pro      |
-| openai      | yes              | gpt-4o, gpt-4-turbo                   |
-| claude cli  | no               | local claude instance                 |
-
-configure your provider in settings (⚙️) or via environment variables.
-
----
-
-## 🤝 contributing
-
-1. fork the repo
-2. create a branch: `git checkout -b feature/amazing-feature`
-3. commit changes: `git commit -am 'feat: add amazing feature'`
-4. push: `git push origin feature/amazing-feature`
-5. open a pull request
-
-please follow [conventional commits](https://www.conventionalcommits.org/).
-
----
-
-## 📄 license
-
-[MIT](./LICENSE) © 2024
-
----
-
-<div align="center">
-<sub>made with 🖤 for developers who use AI</sub>
-</div>
+Distributed under the MIT License. See `LICENSE` for more information.
