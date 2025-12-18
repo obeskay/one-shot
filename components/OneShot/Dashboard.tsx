@@ -164,154 +164,124 @@ Por favor, genera una solucion completa que incluya:
   // WORKSPACE STATE (Con proyecto)
   // ═══════════════════════════════════════════════════════════
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-canvas relative">
-      <div className="flex-1 overflow-y-auto p-8 md:p-12 pb-32 scrollbar-hidden">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-canvas relative font-sans selection:bg-status-ready selection:text-black">
+      
+      {/* Header */}
+      <header className="px-10 pt-10 pb-6 flex justify-between items-center animate-reveal">
+        <h1 className="text-h2 font-light lowercase text-ink tracking-tight">dashboard</h1>
+        <button className="text-ink-subtle hover:text-ink transition-colors">
+            <span className="sr-only">Settings</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </header>
+      
+      {/* SVG Defs for Graphs */}
+      <svg className="absolute w-0 h-0">
+        <defs>
+            <linearGradient id="gradient-files" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="currentColor" stopOpacity="0.5" />
+                <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+            </linearGradient>
+        </defs>
+      </svg>
 
-        {/* Objetivo Section */}
-        <section className="mb-12 animate-reveal">
-          <label className="text-micro text-ink-subtle uppercase tracking-widest block mb-4 font-mono">
-            objetivo
-          </label>
-          <div className="group relative">
-            <textarea
-              value={state.intent}
-              onChange={(e) => dispatch({ type: 'SET_INTENT', payload: e.target.value })}
-              placeholder="¿Qué quieres lograr con el código seleccionado?"
-              className="w-full bg-transparent text-ink text-lg font-light placeholder:text-ink-subtle/50 placeholder:font-light resize-none border border-stroke rounded-large focus:outline-none focus:border-ink p-6 min-h-[140px] leading-relaxed transition-all duration-normal"
-            />
-          </div>
-        </section>
+      <div className="flex-1 overflow-y-auto px-10 pb-32 scrollbar-hidden">
 
-        {/* Stats Bar */}
-        <section className="mb-12 animate-reveal delay-100">
-          <div className="grid grid-cols-3 gap-4 md:gap-6">
+        {/* Separator */}
+        <div className="w-full h-px bg-stroke mb-8 animate-reveal delay-100" />
+
+        {/* Stats Grid */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 animate-reveal delay-200">
             {/* Files Card */}
-            <Card variant="ghost" className="p-5 hover:border-stroke-emphasis group relative overflow-hidden transition-all duration-slow">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-slow">
-                  <FileText size={18} className="text-ink" strokeWidth={1.5} />
+            <div className="group relative p-6 bg-surface border border-stroke rounded-xl h-40 flex flex-col justify-between hover:border-stroke-emphasis hover:shadow-glow-subtle transition-all duration-300">
+                <span className="text-sm text-ink-muted lowercase font-medium">files</span>
+                <div className="flex items-end justify-between">
+                    <span className="text-4xl font-light text-ink tracking-tighter">{formatNumber(fileCount)}</span>
+                    {/* Tiny Graph Decoration */}
+                    <svg className="w-16 h-8 text-ink-subtle opacity-50 group-hover:text-status-ready group-hover:opacity-100 transition-colors" viewBox="0 0 64 32" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M0 28 C10 28, 15 15, 25 20 C35 25, 40 5, 50 10 C55 12, 60 0, 64 0" vectorEffect="non-scaling-stroke"/>
+                        <path d="M0 28 L64 28" strokeWidth="0" fill="url(#gradient-files)" className="opacity-20"/>
+                    </svg>
                 </div>
-                <div className="min-w-0">
-                  <div className="text-2xl md:text-3xl font-light text-ink tracking-tight">{fileCount}</div>
-                  <div className="text-micro text-ink-subtle uppercase tracking-widest font-mono">archivos</div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Tokens Card */}
-            <Card variant="ghost" className="p-5 hover:border-stroke-emphasis group relative overflow-hidden transition-all duration-slow">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-slow">
-                  <Zap size={18} className="text-ink" strokeWidth={1.5} />
-                </div>
-                <div className="min-w-0">
-                  <div className={`text-2xl md:text-3xl font-light tracking-tight ${isOverBudget ? 'text-status-error' : 'text-ink'}`}>
-                    {formatNumber(totalTokens)}
-                  </div>
-                  <div className="text-micro text-ink-subtle uppercase tracking-widest font-mono">tokens</div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Budget Card */}
-            <Card variant="ghost" className="p-5 hover:border-stroke-emphasis group relative overflow-hidden transition-all duration-slow flex flex-col justify-center">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-micro text-ink-subtle uppercase tracking-widest font-mono">presupuesto</span>
-                <span className={`text-xs font-mono ${isOverBudget ? 'text-status-error' : 'text-ink'}`}>
-                  {usagePercent.toFixed(0)}%
-                </span>
-              </div>
-              <div className="w-full bg-surface h-1.5 rounded-full overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-reveal ease-expo-out ${
-                    isOverBudget ? 'bg-status-error' : usagePercent > 80 ? 'bg-status-warning' : 'bg-ink'
-                  }`}
-                  style={{ width: `${Math.min(usagePercent, 100)}%` }}
-                />
-              </div>
-            </Card>
-          </div>
-        </section>
-
-        {/* Budget Selector + Generate Button */}
-        <section className="mb-12 animate-reveal delay-200">
-          <div className="flex items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <label className="text-micro text-ink-subtle uppercase tracking-widest font-mono">
-                límite:
-              </label>
-              <div className="relative min-w-[120px]">
-                <Select
-                  value={state.budgetTokens}
-                  onChange={(e) => dispatch({ type: 'SET_BUDGET', payload: Number(e.target.value) })}
-                  className="pl-2"
-                >
-                  <option value={25000}>25k</option>
-                  <option value={50000}>50k</option>
-                  <option value={100000}>100k</option>
-                  <option value={128000}>128k</option>
-                  <option value={200000}>200k</option>
-                </Select>
-              </div>
             </div>
 
-            <Button
-              variant="primary"
-              shape="pill"
-              size="lg"
-              onClick={handleGenerate}
-              disabled={fileCount === 0 || isGenerating}
-              isLoading={isGenerating}
-              icon={!isGenerating ? <Sparkles size={16} /> : undefined}
-              className="shadow-elevated hover:shadow-prominent"
+            {/* Tokens Card */}
+            <div className="group relative p-6 bg-surface border border-stroke rounded-xl h-40 flex flex-col justify-between hover:border-stroke-emphasis hover:shadow-glow-subtle transition-all duration-300">
+                <span className="text-sm text-ink-muted lowercase font-medium">tokens</span>
+                <div className="flex items-end justify-between">
+                    <span className="text-4xl font-light text-ink tracking-tighter">{totalTokens > 1000 ? `${(totalTokens/1000).toFixed(0)}k` : totalTokens}</span>
+                    <svg className="w-16 h-8 text-ink-subtle opacity-50 group-hover:text-status-ready group-hover:opacity-100 transition-colors" viewBox="0 0 64 32" fill="none" stroke="currentColor" strokeWidth="2">
+                         <path d="M0 25 C10 25, 20 20, 30 22 C40 24, 50 10, 64 5" vectorEffect="non-scaling-stroke"/>
+                    </svg>
+                </div>
+            </div>
+
+            {/* Budget Card */}
+            <div className="group relative p-6 bg-surface border border-stroke rounded-xl h-40 flex flex-col justify-between hover:border-stroke-emphasis hover:shadow-glow-subtle transition-all duration-300">
+                <span className="text-sm text-ink-muted lowercase font-medium">budget</span>
+                <div>
+                     <div className="flex items-baseline gap-1">
+                        <span className="text-4xl font-light text-ink tracking-tighter">${(state.budgetTokens / 10000).toFixed(2)}</span>
+                     </div>
+                     <div className="w-full bg-surface-muted h-1 mt-4 rounded-full overflow-hidden">
+                        <div 
+                            className={`h-full rounded-full transition-all duration-500 ${isOverBudget ? 'bg-status-error' : 'bg-status-ready'}`}
+                            style={{ width: `${Math.min(usagePercent, 100)}%` }}
+                        />
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        {/* Main Action - Centered Large Button */}
+        <section className="flex justify-center items-center py-10 animate-reveal delay-300">
+            <button
+                onClick={handleGenerate}
+                disabled={fileCount === 0 || isGenerating}
+                className="group relative w-full max-w-lg h-20 rounded-pill bg-surface border border-stroke hover:border-status-ready hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden"
             >
-              generar one-shot
-            </Button>
-          </div>
+                {/* Background Hover Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                
+                <span className="text-xl font-light lowercase text-ink tracking-wide z-10">
+                    {isGenerating ? 'generating...' : 'generate one-shot'}
+                </span>
+                
+                {!isGenerating && <Sparkles className="w-5 h-5 text-status-ready z-10 animate-pulse-glow" />}
+            </button>
         </section>
 
-        {/* Strategy Selector */}
-        <section className="mb-12 animate-reveal delay-300">
-          <StrategySelector />
-        </section>
-
-        {/* Selected Files Grid */}
+        {/* Selected Files List (Visible but subtle) */}
         {fileCount > 0 && (
-          <section className="animate-slide-up">
-            <div className="flex items-center justify-between mb-6">
+          <section className="animate-slide-up mt-12">
+            <div className="flex items-center justify-between mb-6 px-2">
               <span className="text-micro font-mono text-ink-subtle uppercase tracking-widest">
                 contexto seleccionado
               </span>
               <button
                 onClick={() => dispatch({ type: 'CLEAR_SELECTION' })}
-                className="text-micro text-ink-subtle hover:text-status-error transition-colors duration-normal uppercase tracking-widest pb-0.5 border-b border-transparent hover:border-status-error/50 font-mono"
+                className="text-micro text-ink-subtle hover:text-status-error transition-colors uppercase tracking-widest"
               >
-                limpiar todo
+                clear
               </button>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {selectedFiles.map(id => (
-                <FileCard key={id} fileId={id} />
-              ))}
+            <div className="grid grid-cols-1 gap-2">
+                {selectedFiles.map(id => (
+                    <div key={id} className="group flex items-center justify-between p-3 rounded-lg hover:bg-surface-elevated transition-colors border border-transparent hover:border-stroke">
+                        <div className="flex items-center gap-3 overflow-hidden">
+                            <FileText size={16} className="text-ink-subtle group-hover:text-status-ready transition-colors" />
+                            <span className="text-sm text-ink-muted truncate font-mono">{id.split('/').pop()}</span>
+                        </div>
+                        <span className="text-xs text-ink-subtle font-mono group-hover:text-ink transition-colors">
+                            {formatNumber(findNodeById(state.tree?.root, id)?.size || 0)}b
+                        </span>
+                    </div>
+                ))}
             </div>
           </section>
         )}
 
-        {fileCount === 0 && (
-          <section className="text-center py-20 animate-fade-in">
-            <Folder size={56} className="mx-auto mb-6 text-stroke" strokeWidth={1} />
-            <p className="text-lg font-light text-ink-subtle lowercase tracking-tight">
-              selecciona archivos del explorador
-            </p>
-            <p className="text-sm text-ink-subtle/60 mt-2 lowercase">
-              usa el panel izquierdo para navegar tu proyecto
-            </p>
-          </section>
-        )}
       </div>
-
-      <ActionDock />
     </div>
   );
 };
