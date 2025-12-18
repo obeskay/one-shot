@@ -7,8 +7,10 @@ import { ArrowDown, ArrowUpRight, Sparkles, Folder, FileText, Zap, ChevronDown }
 import { Bridge } from '../../services/bridge';
 import { useToast } from '../../contexts/ToastContext';
 import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { Select } from '../ui/Select';
 import type { FileNode } from '../../types';
-import { estimateTokens, formatNumber } from '../../utils/cn';
+import { estimateTokens, formatNumber, cn } from '../../utils/cn';
 import { findNodeById } from '../../utils/tree-utils';
 
 export const Dashboard: React.FC = () => {
@@ -184,7 +186,7 @@ Por favor, genera una solucion completa que incluya:
         <section className="mb-12 animate-reveal delay-100">
           <div className="grid grid-cols-3 gap-4 md:gap-6">
             {/* Files Card */}
-            <div className="border border-stroke rounded-xl p-5 bg-transparent hover:border-stroke-emphasis transition-all duration-slow group">
+            <Card variant="ghost" className="p-5 hover:border-stroke-emphasis group relative overflow-hidden transition-all duration-slow">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-slow">
                   <FileText size={18} className="text-ink" strokeWidth={1.5} />
@@ -194,10 +196,10 @@ Por favor, genera una solucion completa que incluya:
                   <div className="text-micro text-ink-subtle uppercase tracking-widest font-mono">archivos</div>
                 </div>
               </div>
-            </div>
+            </Card>
 
             {/* Tokens Card */}
-            <div className="border border-stroke rounded-xl p-5 bg-transparent hover:border-stroke-emphasis transition-all duration-slow group">
+            <Card variant="ghost" className="p-5 hover:border-stroke-emphasis group relative overflow-hidden transition-all duration-slow">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-slow">
                   <Zap size={18} className="text-ink" strokeWidth={1.5} />
@@ -209,10 +211,10 @@ Por favor, genera una solucion completa que incluya:
                   <div className="text-micro text-ink-subtle uppercase tracking-widest font-mono">tokens</div>
                 </div>
               </div>
-            </div>
+            </Card>
 
             {/* Budget Card */}
-            <div className="border border-stroke rounded-xl p-5 bg-transparent hover:border-stroke-emphasis transition-all duration-slow group flex flex-col justify-center">
+            <Card variant="ghost" className="p-5 hover:border-stroke-emphasis group relative overflow-hidden transition-all duration-slow flex flex-col justify-center">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-micro text-ink-subtle uppercase tracking-widest font-mono">presupuesto</span>
                 <span className={`text-xs font-mono ${isOverBudget ? 'text-status-error' : 'text-ink'}`}>
@@ -227,7 +229,7 @@ Por favor, genera una solucion completa que incluya:
                   style={{ width: `${Math.min(usagePercent, 100)}%` }}
                 />
               </div>
-            </div>
+            </Card>
           </div>
         </section>
 
@@ -238,21 +240,18 @@ Por favor, genera una solucion completa que incluya:
               <label className="text-micro text-ink-subtle uppercase tracking-widest font-mono">
                 límite:
               </label>
-              <div className="relative">
-                <select
+              <div className="relative min-w-[120px]">
+                <Select
                   value={state.budgetTokens}
                   onChange={(e) => dispatch({ type: 'SET_BUDGET', payload: Number(e.target.value) })}
-                  className="appearance-none bg-transparent border-b border-stroke pl-2 pr-8 py-1 text-sm text-ink font-mono focus:outline-none focus:border-ink cursor-pointer hover:border-stroke-emphasis transition-colors duration-normal"
+                  className="pl-2"
                 >
                   <option value={25000}>25k</option>
                   <option value={50000}>50k</option>
                   <option value={100000}>100k</option>
                   <option value={128000}>128k</option>
                   <option value={200000}>200k</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-ink-subtle">
-                  <ChevronDown size={14} />
-                </div>
+                </Select>
               </div>
             </div>
 

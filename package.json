@@ -1,12 +1,29 @@
 {
   "name": "one-shot",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Context builder for LLMs - generate optimized structured prompts from your codebase",
+  "author": "Obed Wook",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/obeskay/one-shot.git"
+  },
+  "keywords": [
+    "llm",
+    "ai",
+    "context",
+    "prompt-engineering",
+    "developer-tools",
+    "wails",
+    "react"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "clsx": "^2.1.1",

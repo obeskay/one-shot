@@ -1,6 +1,6 @@
 # one-shot
 
-> constructor de contexto para llms - genera payloads optimizados para modelos de lenguaje
+> Context builder for LLMs – generate structured prompts from your codebase in one shot
 
 <div align="center">
 
@@ -8,153 +8,167 @@
 ![react](https://img.shields.io/badge/react-19-61dafb?style=flat-square)
 ![tailwind](https://img.shields.io/badge/tailwind-v4-38bdf8?style=flat-square)
 ![wails](https://img.shields.io/badge/wails-go-00add8?style=flat-square)
+![license](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
 </div>
 
-## qué es
+<div align="center">
+  <strong>stop copy-pasting files manually. curate context visually.</strong>
+</div>
 
-one-shot es una aplicación de escritorio que permite a desarrolladores construir contexto estructurado para modelos de lenguaje (llms) de manera visual e intuitiva.
+---
 
-### características
+## ✨ what it does
 
-- **explorador de archivos** - navega tu proyecto y selecciona archivos relevantes
-- **estrategias de contexto** - elige entre contenido raw o resúmenes ia
-- **vista previa** - previsualiza el payload antes de copiarlo
-- **chat integrado** - interactúa con llms usando el contexto seleccionado
-- **multi-proveedor** - soporta anthropic, google, openai y modelos locales
+one-shot is a desktop app that lets developers build structured context payloads for large language models (LLMs). select files from your project, define your goal, and get an optimized prompt ready to paste.
 
-## stack técnico
+### features
 
-| capa | tecnología |
-|------|------------|
-| frontend | react 19, typescript, tailwind css v4 |
-| backend | go, wails v2 |
-| ui | sistema de diseño minimalista monocromático |
+- 🗂️ **file explorer** – browse your project and pick relevant files
+- 🎯 **strategy modes** – raw content or AI-powered summaries
+- 👁️ **live preview** – see your payload before copying
+- 💬 **integrated chat** – interact with LLMs using selected context
+- 🔌 **multi-provider** – anthropic, google, openai, and local models
 
-## instalación
+---
 
-### prerrequisitos
+## 🛠️ stack
+
+| layer    | tech                                     |
+|----------|------------------------------------------|
+| frontend | react 19, typescript, tailwind css v4    |
+| backend  | go, wails v2                             |
+| design   | custom monochromatic design system       |
+
+---
+
+## 🚀 quick start
+
+### prerequisites
 
 - [go](https://golang.org/) 1.21+
 - [node.js](https://nodejs.org/) 20+
 - [wails](https://wails.io/) v2
 
-### desarrollo
+### development
 
 ```bash
-# clonar repositorio
-git clone https://github.com/tu-usuario/one-shot.git
+# clone
+git clone https://github.com/obeskay/one-shot.git
 cd one-shot
 
-# instalar dependencias frontend
+# install frontend deps
 npm install
 
-# ejecutar en modo desarrollo
+# run dev mode
 wails dev
 ```
 
-### build
+### production build
 
 ```bash
-# compilar para tu plataforma
+# build for your platform
 wails build
 
-# el ejecutable estará en build/bin/
+# binary output: build/bin/
 ```
 
-## sistema de diseño
+---
 
-one-shot usa un sistema de tokens semánticos basado en tailwind v4:
+## 🎨 design system
 
-### colores
+one-shot uses semantic design tokens built on tailwind v4:
+
+### colors
 
 ```css
-/* superficies */
---color-canvas: #fcfbf9      /* fondo principal */
---color-surface: #f5f5f5     /* cards/panels */
---color-surface-elevated: #ffffff
+/* surfaces */
+--color-canvas: #09090b      /* main bg */
+--color-surface: #18181b     /* cards */
+--color-surface-elevated: #27272a
 
-/* texto */
---color-ink: #171717         /* texto principal */
---color-ink-subtle: #a3a3a3  /* texto secundario */
---color-ink-inverted: #fcfbf9
+/* text */
+--color-ink: #fafafa         /* primary text */
+--color-ink-muted: #a1a1aa   /* secondary */
+--color-ink-subtle: #71717a  /* subtle */
 
-/* bordes */
---color-stroke: #e5e5e5
---color-stroke-emphasis: #d4d4d4
-
-/* estados */
+/* status */
 --color-status-ready: #10b981
 --color-status-error: #ef4444
 ```
 
-### tipografía
+### typography
 
-- display: clamp(2.5rem, 6vw, 4.5rem)
-- micro: 0.625rem con tracking-widest
-- fuente mono para código
+- display: `clamp(2.5rem, 6vw, 4.5rem)` – hero headlines
+- micro: `0.625rem` with `letter-spacing: 0.1em` – labels
+- monospace font stack for code
 
-### patrones
+### motion
 
-- **border-radius orgánico** - corners asimétricos (40px/8px)
-- **animaciones expo-out** - cubic-bezier(0.16, 1, 0.3, 1)
-- **lowercase dominante** - toda la ui en minúsculas
+- expo-out easing: `cubic-bezier(0.16, 1, 0.3, 1)`
+- reveal animation: `translateY(20px) → 0` with staggered delays
 
-## estructura del proyecto
+---
+
+## 📁 project structure
 
 ```
 one-shot/
 ├── components/
-│   ├── features/         # componentes de dominio
+│   ├── features/         # domain components
 │   │   ├── Chat/
 │   │   ├── Context/
 │   │   ├── Settings/
 │   │   └── Tree/
-│   ├── Layout/           # layout principal
-│   ├── OneShot/          # componentes core
-│   └── ui/               # sistema de diseño
+│   ├── Layout/           # main layout
+│   ├── OneShot/          # core components
+│   └── ui/               # design system primitives
 ├── contexts/             # react context providers
 ├── hooks/                # custom hooks
-├── internal/             # backend go
+├── internal/             # go backend
 │   ├── app/
 │   ├── context/
 │   ├── domain/
 │   └── llm/
-├── services/             # bridge frontend-backend
-├── utils/                # utilidades
-├── index.css             # design tokens (tailwind v4)
+├── services/             # frontend-backend bridge
+├── utils/                # utilities
+├── index.css             # tailwind v4 tokens
 └── App.tsx
 ```
 
-## configuración
+---
 
-### proveedores de ia
+## ⚙️ ai providers
 
-one-shot soporta múltiples proveedores:
+| provider    | api key required | models                                |
+|-------------|------------------|---------------------------------------|
+| anthropic   | yes              | claude-3.5-sonnet, claude-3-opus      |
+| google      | yes              | gemini-2.0-flash, gemini-1.5-pro      |
+| openai      | yes              | gpt-4o, gpt-4-turbo                   |
+| claude cli  | no               | local claude instance                 |
 
-| proveedor | requiere api key | modelos |
-|-----------|------------------|---------|
-| anthropic | sí | claude-3.5-sonnet, claude-3-opus |
-| google | sí | gemini-2.0-flash, gemini-1.5-pro |
-| openai | sí | gpt-4o, gpt-4-turbo |
-| claude cli | no | claude local |
+configure your provider in settings (⚙️) or via environment variables.
 
-configura tu proveedor en ajustes (⚙️) o define la variable de entorno correspondiente.
+---
 
-## licencia
+## 🤝 contributing
 
-mit
+1. fork the repo
+2. create a branch: `git checkout -b feature/amazing-feature`
+3. commit changes: `git commit -am 'feat: add amazing feature'`
+4. push: `git push origin feature/amazing-feature`
+5. open a pull request
 
-## contribuir
+please follow [conventional commits](https://www.conventionalcommits.org/).
 
-1. fork el repositorio
-2. crea una rama (`git checkout -b feature/nueva-caracteristica`)
-3. commit tus cambios (`git commit -am 'feat: agregar nueva característica'`)
-4. push a la rama (`git push origin feature/nueva-caracteristica`)
-5. abre un pull request
+---
+
+## 📄 license
+
+[MIT](./LICENSE) © 2024
 
 ---
 
 <div align="center">
-<sub>hecho con 🖤 para desarrolladores que usan ia</sub>
+<sub>made with 🖤 for developers who use AI</sub>
 </div>

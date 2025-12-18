@@ -1,6 +1,15 @@
 # Dependencies
 node_modules/
 
+# AI Agent files (local only)
+.agent/
+.gemini/
+.cursor/
+.claude/
+
+# Package lock hash
+*.md5
+
 # Build outputs
 dist/
 dist-ssr/

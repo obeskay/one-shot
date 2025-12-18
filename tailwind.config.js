@@ -9,48 +9,55 @@ export default {
         extend: {
             // === COLORES ===
             colors: {
-                // Superficies (modo claro)
-                canvas: '#fcfbf9',
+                // Core Mappings (generic aliases used in components)
+                background: 'var(--color-canvas)',
+                border: 'var(--color-stroke)',
+                primary: 'var(--color-ink)',     // Used for main text, active states
+                secondary: 'var(--color-ink-muted)', // Used for secondary text
+                accent: 'var(--color-status-active)',
+
+                // Superficies
+                canvas: 'var(--color-canvas)',
                 surface: {
-                    DEFAULT: '#f5f5f5',
-                    muted: '#fafafa',
-                    elevated: '#ffffff',
+                    DEFAULT: 'var(--color-surface)',
+                    muted: 'var(--color-surface-muted)',
+                    elevated: 'var(--color-surface-elevated)',
                 },
 
-                // Superficies (modo oscuro / secciones oscuras)
+                // Dark specific (legacy)
                 dark: {
-                    DEFAULT: '#0a0a0a',
-                    surface: '#171717',
-                    muted: '#262626',
+                    DEFAULT: 'var(--color-dark)',
+                    surface: 'var(--color-dark-surface)',
+                    muted: 'var(--color-dark-muted)',
                 },
 
-                // Texto
+                // Texto & Elementos
                 ink: {
-                    DEFAULT: '#171717',
-                    muted: '#525252',
-                    subtle: '#a3a3a3',
-                    inverted: '#fcfbf9',
+                    DEFAULT: 'var(--color-ink)',
+                    muted: 'var(--color-ink-muted)',
+                    subtle: 'var(--color-ink-subtle)',
+                    inverted: 'var(--color-ink-inverted)',
                 },
 
                 // Bordes
                 stroke: {
-                    DEFAULT: '#e5e5e5',
-                    subtle: '#f0f0f0',
-                    emphasis: '#d4d4d4',
-                    dark: '#262626',
+                    DEFAULT: 'var(--color-stroke)',
+                    subtle: 'var(--color-stroke-subtle)',
+                    emphasis: 'var(--color-stroke-emphasis)',
+                    dark: 'var(--color-stroke-dark)',
                 },
 
                 // Semánticos
                 status: {
-                    ready: '#10b981',
-                    active: '#3b82f6',
-                    warning: '#f59e0b',
-                    error: '#ef4444',
+                    ready: 'var(--color-status-ready)',
+                    active: 'var(--color-status-active)',
+                    warning: 'var(--color-status-warning)',
+                    error: 'var(--color-status-error)',
                 },
 
-                // Legacy aliases (compatibilidad)
-                ash: '#737373',
-                smoke: '#e5e5e5',
+                // Legacy aliases
+                ash: 'var(--color-ash)',
+                smoke: 'var(--color-smoke)',
             },
 
             // === TIPOGRAFÍA ===

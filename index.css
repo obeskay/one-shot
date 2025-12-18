@@ -6,25 +6,25 @@
    ═══════════════════════════════════════════════════════════ */
 
 @theme {
-    /* === COLORES === */
-    --color-canvas: #fcfbf9;
-    --color-surface: #f5f5f5;
-    --color-surface-muted: #fafafa;
-    --color-surface-elevated: #ffffff;
+    /* === COLORES (DARK MODE DEFAULT) === */
+    --color-canvas: #09090b;
+    --color-surface: #18181b;
+    --color-surface-muted: #27272a;
+    --color-surface-elevated: #27272a;
 
-    --color-dark: #0a0a0a;
-    --color-dark-surface: #171717;
-    --color-dark-muted: #262626;
+    --color-dark: #000000;
+    --color-dark-surface: #09090b;
+    --color-dark-muted: #18181b;
 
-    --color-ink: #171717;
-    --color-ink-muted: #525252;
-    --color-ink-subtle: #a3a3a3;
-    --color-ink-inverted: #fcfbf9;
+    --color-ink: #fafafa;
+    --color-ink-muted: #a1a1aa;
+    --color-ink-subtle: #71717a;
+    --color-ink-inverted: #09090b;
 
-    --color-stroke: #e5e5e5;
-    --color-stroke-subtle: #f0f0f0;
-    --color-stroke-emphasis: #d4d4d4;
-    --color-stroke-dark: #262626;
+    --color-stroke: #27272a;
+    --color-stroke-subtle: #18181b;
+    --color-stroke-emphasis: #52525b;
+    --color-stroke-dark: #fafafa;
 
     --color-status-ready: #10b981;
     --color-status-active: #3b82f6;
@@ -32,8 +32,8 @@
     --color-status-error: #ef4444;
 
     /* Legacy aliases */
-    --color-ash: #737373;
-    --color-smoke: #e5e5e5;
+    --color-ash: #a1a1aa;
+    --color-smoke: #27272a;
 
     /* === FONT FAMILY === */
     --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;

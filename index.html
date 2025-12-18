@@ -4,97 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>One Shot</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              background: '#09090b', // Zinc 950
-              surface: '#18181b', // Zinc 900
-              border: '#27272a', // Zinc 800
-              primary: '#fafafa', // Zinc 50
-              secondary: '#a1a1aa', // Zinc 400
-              accent: '#3b82f6', // Blue 500 (Subtle)
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              mono: ['JetBrains Mono', 'monospace'],
-            },
-            transitionTimingFunction: {
-              'expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
-            },
-            animation: {
-              'reveal': 'reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-              'fade-in': 'fadeIn 0.4s ease-out forwards',
-            },
-            keyframes: {
-              reveal: {
-                '0%': { opacity: 0, transform: 'translateY(10px)' },
-                '100%': { opacity: 1, transform: 'translateY(0)' },
-              },
-              fadeIn: {
-                '0%': { opacity: 0 },
-                '100%': { opacity: 1 },
-              }
-            }
-          },
-        },
+    <link rel="stylesheet" href="/index.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react": "https://esm.sh/react@^19.2.3",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "react-dom": "https://esm.sh/react-dom@^19.2.3",
+        "tailwind-merge": "https://esm.sh/tailwind-merge@^3.4.0",
+        "clsx": "https://esm.sh/clsx@^2.1.1"
       }
+    }
     </script>
-    <style>
-      :root {
-        --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      body { 
-        background-color: #09090b; 
-        color: #fafafa; 
-        overflow: hidden; 
-        font-feature-settings: "ss01", "ss02", "cv01";
-        -webkit-font-smoothing: antialiased;
-      }
-      
-      /* Precision Scrollbar */
-      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-      .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 2px; }
-      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
-
-      /* Utilities */
-      .reveal-stagger > * {
-        opacity: 0;
-        animation: reveal 0.6s var(--ease-expo) forwards;
-      }
-      .reveal-stagger > *:nth-child(1) { animation-delay: 0.05s; }
-      .reveal-stagger > *:nth-child(2) { animation-delay: 0.1s; }
-      .reveal-stagger > *:nth-child(3) { animation-delay: 0.15s; }
-      .reveal-stagger > *:nth-child(4) { animation-delay: 0.2s; }
-      .reveal-stagger > *:nth-child(5) { animation-delay: 0.25s; }
-
-      .glass-panel {
-        background: rgba(9, 9, 11, 0.7);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-      }
-    </style>
-  <script type="importmap">
-{
-  "imports": {
-    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "tailwind-merge": "https://esm.sh/tailwind-merge@^3.4.0",
-    "clsx": "https://esm.sh/clsx@^2.1.1"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
-</head>
+  </head>
   <body>
     <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>

@@ -4,6 +4,7 @@ import { useToast } from '../../../contexts/ToastContext';
 import { PROVIDERS, getModelsByProvider } from '../../../constants';
 import { ProviderType } from '../../../types';
 import { Button } from '../../ui/Button';
+import { Input } from '../../ui/Input';
 import { ArrowRight, Check, Eye, EyeOff, Terminal, Key, Zap } from 'lucide-react';
 import { Bridge } from '../../../services/bridge';
 
@@ -195,22 +196,22 @@ export const SetupWizard: React.FC = () => {
 
             {/* API Key (si es requerida) */}
             {provider.requiresApiKey && (
-              <div className="space-y-2">
-                <label className="text-xs text-secondary uppercase tracking-widest">
+              <div className="space-y-4">
+                <label className="text-xs text-secondary uppercase tracking-widest font-mono">
                   API Key
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     type={showApiKey ? 'text' : 'password'}
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder={`Ingresa tu ${provider.name} API Key...`}
-                    className="w-full bg-surface/30 border border-border rounded-lg px-4 py-3 pr-12 text-sm text-primary placeholder:text-secondary/50 focus:outline-none focus:border-primary/50 transition-colors font-mono"
+                    className="pr-12"
                   />
                   <button
                     type="button"
                     onClick={() => setShowApiKey(!showApiKey)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors p-1"
                   >
                     {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
