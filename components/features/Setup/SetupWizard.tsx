@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useStore } from '../../../contexts/StoreContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { PROVIDERS, getModelsByProvider } from '../../../constants';
-import { ProviderType } from '../../../types';
+import { ProviderType, Model } from '../../../types';
 import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
 import { ArrowRight, Check, Eye, EyeOff, Terminal, Key, Zap } from 'lucide-react';
 import { Bridge } from '../../../services/bridge';
+import { ModelService } from '../../../services/ModelService';
 
 export const SetupWizard: React.FC = () => {
   const { state, dispatch } = useStore();
@@ -20,16 +21,52 @@ export const SetupWizard: React.FC = () => {
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
 
+  // Dynamic Models State
+  const [fetchedModels, setFetchedModels] = useState<Model[]>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   const provider = selectedProvider ? PROVIDERS.find(p => p.id === selectedProvider) : null;
-  const models = selectedProvider ? getModelsByProvider(selectedProvider) : [];
+  // Combine fetched models with static fallbacks, prioritizing fetched
+  const displayModels = fetchedModels.length > 0 ? fetchedModels : (selectedProvider ? getModelsByProvider(selectedProvider) : []);
 
   const handleProviderSelect = (providerId: ProviderType) => {
     setSelectedProvider(providerId);
-    const providerModels = getModelsByProvider(providerId);
-    if (providerModels.length > 0) {
-      setSelectedModel(providerModels[0].id);
+    setFetchedModels([]); 
+    setFetchError(null);
+    
+    // Auto-fetch for local
+    if (providerId === 'local') {
+        fetchModels(providerId, '', 'http://localhost:11434/v1');
     }
+    
     setStep('config');
+  };
+
+  const fetchModels = async (provId: ProviderType, key: string, url?: string) => {
+      setIsLoadingModels(true);
+      setFetchError(null);
+      try {
+          const res = await ModelService.fetchModels(provId, key, url);
+          if (res.error) {
+              setFetchError(res.error);
+          } else {
+              setFetchedModels(res.models);
+              if (res.models.length > 0) {
+                  setSelectedModel(res.models[0].id);
+              }
+          }
+      } catch (e) {
+          setFetchError('Error fetching models');
+      } finally {
+          setIsLoadingModels(false);
+      }
+  };
+
+  const handleManualRefresh = () => {
+      if (selectedProvider) {
+          fetchModels(selectedProvider, apiKey, provider?.baseURL);
+      }
   };
 
   const handleTestConnection = async () => {
@@ -39,21 +76,29 @@ export const SetupWizard: React.FC = () => {
     setTestResult(null);
 
     try {
-      // Configurar el provider en el backend
+      // Configurar el provider en el backend (Bridge)
       await Bridge.ConfigureLLM(selectedProvider, apiKey, provider?.baseURL || '');
 
-      // Test básico - intentar una llamada simple
-      // Por ahora solo simulamos éxito si hay API key o es CLI local
-      if (!provider?.requiresApiKey || apiKey.trim()) {
-        setTestResult('success');
-        addToast('success', 'Conexión exitosa');
-      } else {
-        setTestResult('error');
-        addToast('error', 'API Key requerida');
+      // VERIFICACIÓN REAL: Intentar fetch de modelos
+      // Si el fetch funciona, la credencial es válida.
+      const response = await ModelService.fetchModels(selectedProvider, apiKey, provider?.baseURL);
+      
+      if (response.error) {
+          throw new Error(response.error);
       }
+      
+      if (response.models.length === 0 && selectedProvider !== 'anthropic') {
+           // Si devolvio 0 modelos y no es anthropic (que no lista), sospechoso pero pase.
+           // Pero si es error, ya habria saltado.
+      }
+
+      setTestResult('success');
+      addToast('success', 'Conexión verificada exitosamente');
+
     } catch (err) {
+      console.error(err);
       setTestResult('error');
-      addToast('error', 'Error de conexión');
+      addToast('error', 'Error de conexión: Credenciales inválidas o servicio inaccesible');
     } finally {
       setIsTesting(false);
     }
@@ -185,6 +230,7 @@ export const SetupWizard: React.FC = () => {
               <button
                 onClick={() => setStep('provider')}
                 className="text-xs text-secondary hover:text-primary transition-colors"
+                disabled={isLoadingModels}
               >
                 &larr; cambiar proveedor
               </button>
@@ -205,6 +251,7 @@ export const SetupWizard: React.FC = () => {
                     type={showApiKey ? 'text' : 'password'}
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
+                    onBlur={() => apiKey && fetchModels(selectedProvider!, apiKey, provider?.baseURL)}
                     placeholder={`Ingresa tu ${provider.name} API Key...`}
                     className="pr-12"
                   />
@@ -224,11 +271,25 @@ export const SetupWizard: React.FC = () => {
 
             {/* Modelo */}
             <div className="space-y-2">
-              <label className="text-xs text-secondary uppercase tracking-widest">
-                Modelo
-              </label>
-              <div className="grid gap-2">
-                {models.map((model) => (
+              <div className="flex items-center justify-between">
+                  <label className="text-xs text-secondary uppercase tracking-widest">
+                    Modelo
+                  </label>
+                  <button 
+                    onClick={handleManualRefresh}
+                    disabled={isLoadingModels}
+                    className="text-[10px] text-primary hover:underline disabled:opacity-50 flex items-center gap-1"
+                  >
+                    {isLoadingModels ? <span className="animate-spin">⟳</span> : '⟳'} Refrescar lista
+                  </button>
+              </div>
+              
+              {fetchError && (
+                  <div className="text-xs text-red-400 mb-2">Error: {fetchError}</div>
+              )}
+              
+              <div className="grid gap-2 max-h-[300px] overflow-y-auto pr-1">
+                {displayModels.map((model) => (
                   <button
                     key={model.id}
                     onClick={() => setSelectedModel(model.id)}
@@ -261,9 +322,18 @@ export const SetupWizard: React.FC = () => {
                     </div>
                   </button>
                 ))}
-              </div>
             </div>
-
+            
+            <div className="mt-2">
+                 <p className="text-[10px] text-secondary font-mono mb-1 uppercase tracking-widest">o escribe el id manualmente:</p>
+                 <Input 
+                    value={selectedModel} 
+                    onChange={(e) => setSelectedModel(e.target.value)} 
+                    placeholder="ej: gpt-5-preview"
+                    className="text-xs"
+                 />
+            </div>
+          </div>
             <div className="flex gap-3 pt-4">
               <Button
                 variant="ghost"

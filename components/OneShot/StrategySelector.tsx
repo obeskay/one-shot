@@ -8,7 +8,7 @@ export const StrategySelector: React.FC = () => {
 
   const strategies = [
     {
-      id: 'files' as const,
+      id: 'precise' as const,
       label: 'archivos raw',
       desc: 'contexto completo sin procesar',
       icon: <FileCode size={18} strokeWidth={1.5} />
