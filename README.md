@@ -12,6 +12,20 @@
 
 </div>
 
+## 📸 screenshots
+
+<div align="center">
+  <img src="assets/screenshots/dashboard.png" alt="one-shot dashboard" width="100%" style="border-radius: 12px; border: 1px solid #27272a;">
+  <p><em>main dashboard – manage context and prompts</em></p>
+</div>
+
+<br/>
+
+<div align="center">
+  <img src="assets/screenshots/setup.png" alt="one-shot setup wizard" width="70%" style="border-radius: 12px; border: 1px solid #27272a;">
+  <p><em>setup wizard – configure ai providers</em></p>
+</div>
+
 <div align="center">
   <strong>stop copy-pasting files manually. curate context visually.</strong>
 </div>
