@@ -1,6 +1,6 @@
 import { AIConfig, ProviderConfig, ProviderType } from './types';
 
-// SOTA Models 2025
+// Dynamic Providers Configuration - No hardcoded model lists
 export const PROVIDERS: ProviderConfig[] = [
     {
         id: 'gemini',
@@ -8,12 +8,7 @@ export const PROVIDERS: ProviderConfig[] = [
         description: 'Native Google AI Studio API',
         requiresApiKey: true,
         icon: '✨',
-        models: [
-            { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Fastest multimodel SOTA', maxTokens: 1048576, canSearch: true },
-            { id: 'gemini-2.0-flash-thinking-exp-1219', name: 'Gemini 2.0 Flash (Thinking)', description: 'Reasoning-enhanced', maxTokens: 1048576, canThink: true },
-            { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', description: 'Best for complex reasoning', maxTokens: 2097152, canSearch: true },
-            { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', description: 'High-volume efficiency', maxTokens: 1048576 },
-        ]
+        models: [] // Fetched dynamically
     },
     {
         id: 'anthropic',
@@ -22,12 +17,7 @@ export const PROVIDERS: ProviderConfig[] = [
         requiresApiKey: true,
         icon: '🤖',
         baseURL: 'https://api.anthropic.com/v1',
-        models: [
-            { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet', description: 'SOTA Intelligence & Speed', maxTokens: 200000, canThink: true },
-            { id: 'claude-3-5-sonnet-20240620', name: 'Claude 3.5 Sonnet', description: 'Coding & reasoning standard', maxTokens: 200000 },
-            { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', description: 'Fast & cost-effective', maxTokens: 200000 },
-            { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', description: 'Deep reasoning legacy', maxTokens: 200000 },
-        ]
+        models: [] // Manual entry or backend proxy usually required, keeping empty to enforce manual/fetch
     },
     {
         id: 'openai',
@@ -36,12 +26,7 @@ export const PROVIDERS: ProviderConfig[] = [
         requiresApiKey: true,
         icon: '🧠',
         baseURL: 'https://api.openai.com/v1',
-        models: [
-            { id: 'gpt-4o', name: 'GPT-4o', description: 'Omni-model flagship', maxTokens: 128000 },
-            { id: 'o1', name: 'o1', description: 'Deep reasoning (SOTA)', maxTokens: 128000, canThink: true },
-            { id: 'o1-mini', name: 'o1-mini', description: 'Fast reasoning', maxTokens: 128000, canThink: true },
-            { id: 'gpt-4o-mini', name: 'GPT-4o-mini', description: 'Efficient & cheap', maxTokens: 128000 },
-        ]
+        models: [] // Fetched dynamically
     },
     {
         id: 'deepseek',
@@ -50,30 +35,22 @@ export const PROVIDERS: ProviderConfig[] = [
         requiresApiKey: true,
         icon: '🐋',
         baseURL: 'https://api.deepseek.com/v1',
-        models: [
-            { id: 'deepseek-reasoner', name: 'DeepSeek R1', description: 'SOTA Open Reasoning', maxTokens: 64000, canThink: true },
-            { id: 'deepseek-chat', name: 'DeepSeek V3', description: 'General purpose chat', maxTokens: 64000 },
-        ]
+        models: [] // Fetched dynamically
     },
     {
         id: 'local',
         name: 'Local (Ollama)',
-        description: 'Llama 3.3,DeepSeek, Qwen',
+        description: 'Llama 3.3, DeepSeek, Qwen',
         requiresApiKey: false,
         icon: '💻',
         baseURL: 'http://localhost:11434/v1',
-        models: [
-            { id: 'llama3.3', name: 'Llama 3.3', description: 'Meta SOTA Open Weights', maxTokens: 128000 },
-            { id: 'deepseek-r1:latest', name: 'DeepSeek R1 (Ollama)', description: 'Local Reasoning', maxTokens: 32000, canThink: true },
-            { id: 'qwen2.5-coder', name: 'Qwen 2.5 Coder', description: 'Best local coding model', maxTokens: 32000 },
-            { id: 'mistral-large', name: 'Mistral Large', description: 'Mistral flagship', maxTokens: 32000 },
-        ]
+        models: [] // Fetched dynamically
     }
 ];
 
 export const DEFAULT_AI_CONFIG: AIConfig = {
     provider: 'gemini',
-    model: 'gemini-2.0-flash',
+    model: '', // No default model, must be selected
     apiKey: '',
     temperature: 0.7,
     systemInstruction: "You are an expert software engineer. Analyze the context provided and generate optimized code or explanations.",
