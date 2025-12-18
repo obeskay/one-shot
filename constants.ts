@@ -1,83 +1,82 @@
 import { AIConfig, ProviderConfig, ProviderType } from './types';
 
-// SOTA Models 2025 - Actualizado basado en documentación oficial
+// SOTA Models 2025
 export const PROVIDERS: ProviderConfig[] = [
     {
         id: 'gemini',
         name: 'Google Gemini',
-        description: 'API directa de Google AI Studio',
+        description: 'Native Google AI Studio API',
         requiresApiKey: true,
         icon: '✨',
         models: [
-            { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'SOTA: Más reciente y rápido', maxTokens: 1000000 },
-            { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Rápido y eficiente', maxTokens: 1000000 },
-            { id: 'gemini-2.0-flash-thinking', name: 'Gemini 2.0 Flash Thinking', description: 'Con razonamiento extendido', maxTokens: 1000000, canThink: true },
-            { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', description: 'Mejor razonamiento', maxTokens: 2000000, canThink: true },
+            { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Fastest multimodel SOTA', maxTokens: 1048576, canSearch: true },
+            { id: 'gemini-2.0-flash-thinking-exp-1219', name: 'Gemini 2.0 Flash (Thinking)', description: 'Reasoning-enhanced', maxTokens: 1048576, canThink: true },
+            { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', description: 'Best for complex reasoning', maxTokens: 2097152, canSearch: true },
+            { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', description: 'High-volume efficiency', maxTokens: 1048576 },
         ]
     },
     {
         id: 'anthropic',
         name: 'Anthropic Claude',
-        description: 'Claude Opus 4.5, Sonnet 4, Haiku',
+        description: 'Claude 3.5 & 3.7 Series',
         requiresApiKey: true,
         icon: '🤖',
+        baseURL: 'https://api.anthropic.com/v1',
         models: [
-            { id: 'claude-opus-4-5-20251101', name: 'Claude Opus 4.5', description: 'SOTA: Flagship más capaz', maxTokens: 200000, canThink: true },
-            { id: 'claude-sonnet-4-5-20250929', name: 'Claude Sonnet 4.5', description: 'Balance velocidad/inteligencia', maxTokens: 200000 },
-            { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', description: 'Excelente para código', maxTokens: 200000 },
-            { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', description: 'Ultra rápido y económico', maxTokens: 200000 },
+            { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet', description: 'SOTA Intelligence & Speed', maxTokens: 200000, canThink: true },
+            { id: 'claude-3-5-sonnet-20240620', name: 'Claude 3.5 Sonnet', description: 'Coding & reasoning standard', maxTokens: 200000 },
+            { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', description: 'Fast & cost-effective', maxTokens: 200000 },
+            { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', description: 'Deep reasoning legacy', maxTokens: 200000 },
         ]
     },
     {
         id: 'openai',
         name: 'OpenAI',
-        description: 'GPT-4o, o1, o3-mini',
+        description: 'GPT-4o & o1 Series',
         requiresApiKey: true,
         icon: '🧠',
+        baseURL: 'https://api.openai.com/v1',
         models: [
-            { id: 'gpt-4o', name: 'GPT-4o', description: 'Multimodal flagship', maxTokens: 128000 },
-            { id: 'o3-mini', name: 'o3-mini', description: 'SOTA: Razonamiento avanzado económico', maxTokens: 128000, canThink: true },
-            { id: 'o1', name: 'o1', description: 'Razonamiento profundo', maxTokens: 128000, canThink: true },
-            { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', description: 'Rápido y capaz', maxTokens: 128000 },
+            { id: 'gpt-4o', name: 'GPT-4o', description: 'Omni-model flagship', maxTokens: 128000 },
+            { id: 'o1', name: 'o1', description: 'Deep reasoning (SOTA)', maxTokens: 128000, canThink: true },
+            { id: 'o1-mini', name: 'o1-mini', description: 'Fast reasoning', maxTokens: 128000, canThink: true },
+            { id: 'gpt-4o-mini', name: 'GPT-4o-mini', description: 'Efficient & cheap', maxTokens: 128000 },
         ]
     },
     {
-        id: 'openrouter',
-        name: 'OpenRouter',
-        description: 'Acceso a múltiples modelos',
+        id: 'deepseek',
+        name: 'DeepSeek',
+        description: 'Open Reasoning SOTA',
         requiresApiKey: true,
-        baseURL: 'https://openrouter.ai/api/v1',
-        icon: '🔀',
+        icon: '🐋',
+        baseURL: 'https://api.deepseek.com/v1',
         models: [
-            { id: 'anthropic/claude-opus-4.5', name: 'Claude Opus 4.5 via Router', description: 'Anthropic flagship', maxTokens: 200000 },
-            { id: 'anthropic/claude-sonnet-4.5', name: 'Claude Sonnet 4.5 via Router', description: 'Anthropic balance', maxTokens: 200000 },
-            { id: 'openai/gpt-4o', name: 'GPT-4o via Router', description: 'OpenAI flagship', maxTokens: 128000 },
-            { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash via Router', description: 'Google SOTA', maxTokens: 1000000 },
-            { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1 via Router', description: 'Open source reasoning', maxTokens: 128000, canThink: true },
+            { id: 'deepseek-reasoner', name: 'DeepSeek R1', description: 'SOTA Open Reasoning', maxTokens: 64000, canThink: true },
+            { id: 'deepseek-chat', name: 'DeepSeek V3', description: 'General purpose chat', maxTokens: 64000 },
         ]
     },
     {
-        id: 'local-cli',
-        name: 'CLI Local',
-        description: 'Claude Code, Gemini CLI, Codex, etc.',
+        id: 'local',
+        name: 'Local (Ollama)',
+        description: 'Llama 3.3,DeepSeek, Qwen',
         requiresApiKey: false,
         icon: '💻',
+        baseURL: 'http://localhost:11434/v1',
         models: [
-            { id: 'claude-code', name: 'Claude Code CLI', description: 'Anthropic CLI oficial - requiere: npm i -g @anthropic-ai/claude-code', maxTokens: 200000 },
-            { id: 'gemini-cli', name: 'Gemini CLI', description: 'Google CLI oficial', maxTokens: 1000000 },
-            { id: 'codex-cli', name: 'Codex CLI', description: 'OpenAI Codex local', maxTokens: 128000 },
-            { id: 'aider', name: 'Aider', description: 'Open source AI pair programmer', maxTokens: 128000 },
-            { id: 'cursor', name: 'Cursor', description: 'Cursor AI integration', maxTokens: 128000 },
+            { id: 'llama3.3', name: 'Llama 3.3', description: 'Meta SOTA Open Weights', maxTokens: 128000 },
+            { id: 'deepseek-r1:latest', name: 'DeepSeek R1 (Ollama)', description: 'Local Reasoning', maxTokens: 32000, canThink: true },
+            { id: 'qwen2.5-coder', name: 'Qwen 2.5 Coder', description: 'Best local coding model', maxTokens: 32000 },
+            { id: 'mistral-large', name: 'Mistral Large', description: 'Mistral flagship', maxTokens: 32000 },
         ]
-    },
+    }
 ];
 
 export const DEFAULT_AI_CONFIG: AIConfig = {
     provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    model: 'gemini-2.0-flash',
     apiKey: '',
     temperature: 0.7,
-    systemInstruction: "Eres un asistente de código experto. Analiza el contexto proporcionado y responde de forma concisa, técnica y precisa.",
+    systemInstruction: "You are an expert software engineer. Analyze the context provided and generate optimized code or explanations.",
     useThinking: false,
     useGrounding: false,
     isConfigured: false,
@@ -107,4 +106,6 @@ export const IGNORE_PATTERNS = [
     'venv',
     '.env',
     '.env.local',
+    '.wails',
+    'go.sum',
 ];
