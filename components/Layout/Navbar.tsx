@@ -15,7 +15,7 @@ export const Navbar: React.FC = () => {
     };
 
     return (
-        <nav className="h-14 flex items-center justify-between px-6 md:px-8 bg-transparent shrink-0 border-b border-stroke">
+        <nav className="h-14 border-b border-stroke flex items-center justify-between px-4 bg-glass sticky top-0 z-30 backdrop-blur-md">
             {/* Project Title / Path */}
             <div className="flex items-center gap-4 min-w-0">
                 <div className="flex flex-col">

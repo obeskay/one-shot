@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { useStore } from '../../../contexts/StoreContext';
 import { TreeRow } from './TreeRow';
-import { Input } from '../../ui/Input';
-import { Search } from 'lucide-react';
+import { Search, Filter, FolderOpen, MousePointer2 } from 'lucide-react';
 import { filterTree, getAllFileIds } from '../../../utils/tree-utils';
+import { cn } from '../../../utils/cn';
 
 export const FileExplorer: React.FC = () => {
   const { state, dispatch } = useStore();
@@ -22,8 +22,8 @@ export const FileExplorer: React.FC = () => {
       let targetIds: string[] = [];
 
       if (type === 'all') targetIds = allIds;
-      if (type === 'code') targetIds = allIds.filter(id => /\.(ts|tsx|js|jsx|go|py|rs)$/.test(id));
-      if (type === 'config') targetIds = allIds.filter(id => /\.(json|yaml|yml|toml|xml)$/.test(id));
+      if (type === 'code') targetIds = allIds.filter(id => /\.(ts|tsx|js|jsx|go|py|rs|java|c|cpp|h)$/.test(id));
+      if (type === 'config') targetIds = allIds.filter(id => /\.(json|yaml|yml|toml|xml|ini|env|gitignore)$/.test(id));
 
       dispatch({ type: 'SELECT_BATCH', payload: { ids: targetIds, selected: true }});
   };
@@ -41,70 +41,90 @@ export const FileExplorer: React.FC = () => {
   if (!state.projectPath) return null;
 
   return (
-    <div className="flex flex-col h-full bg-transparent">
-      <div className="p-6 pb-4 border-b border-light">
-        {/* Header con contador */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <h2 className="text-[10px] font-mono text-ash uppercase tracking-widest">
-              Explorador
+    <div className="flex flex-col h-full bg-surface-muted/30 font-sans relative overflow-hidden border-r border-stroke">
+      {/* Background Ambience */}
+      <div className="absolute top-0 left-0 w-full h-[300px] bg-status-ready/2 rounded-full blur-[100px] pointer-events-none -translate-y-1/2" />
+
+      {/* Header Sticky */}
+      <div className="px-4 pt-5 pb-4 space-y-4 shrink-0">
+        
+        {/* Title & Stats */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-[11px] font-bold text-ink uppercase tracking-[0.15em]">
+              Proyecto
             </h2>
-            {selectedCount > 0 && (
-              <span className="text-[10px] font-mono text-ink bg-smoke/50 px-2 py-0.5 rounded-sm">
-                {selectedCount} {selectedCount === 1 ? 'FILE' : 'FILES'}
-              </span>
-            )}
           </div>
-
-          {/* Botones de selección */}
-          <div className="flex gap-4">
-            <button
-              onClick={handleSelectAll}
-              className="text-[10px] uppercase tracking-widest text-ash hover:text-ink transition-colors"
-              title="Seleccionar todo"
-            >
-              ALL
-            </button>
-            {selectedCount > 0 && (
-              <button
-                onClick={handleDeselectAll}
-                className="text-[10px] uppercase tracking-widest text-ash hover:text-ink transition-colors"
-                title="Deseleccionar"
-              >
-                NONE
-              </button>
-            )}
-          </div>
+          
+          {selectedCount > 0 && (
+             <div className="animate-pop-in flex items-center gap-2">
+                <span className="text-[9px] font-mono text-status-ready bg-status-ready/10 px-2 py-0.5 rounded-full border border-status-ready/20">
+                    {selectedCount} seleccionados
+                </span>
+             </div>
+          )}
         </div>
 
-        {/* Búsqueda con icono */}
-        <div className="relative mb-6">
-          <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-ash" />
-          <input
-            placeholder="SEARCH..."
-            value={searchQuery}
-            onChange={(e) => dispatch({ type: 'SET_SEARCH', payload: e.target.value })}
-            className="w-full bg-transparent border-b border-light pb-2 pl-6 text-xs text-ink placeholder:text-smoke/50 focus:outline-none focus:border-ink font-mono uppercase tracking-wide transition-colors"
-          />
+        {/* Search Input */}
+        <div className="relative group">
+            <div className="relative flex items-center bg-surface border border-stroke rounded-lg px-2.5 py-1.5 transition-all focus-within:ring-2 focus-within:ring-status-ready/10 focus-within:border-status-ready/30">
+                <Search className="w-3.5 h-3.5 text-ink-subtle mr-2" />
+                <input
+                    placeholder="Filtrar archivos..."
+                    value={searchQuery}
+                    onChange={(e) => dispatch({ type: 'SET_SEARCH', payload: e.target.value })}
+                    className="w-full bg-transparent border-none text-[12px] text-ink placeholder:text-ink-subtle/30 focus:ring-0 p-0 font-light"
+                    spellCheck={false}
+                />
+            </div>
         </div>
 
-        {/* Filtros rápidos */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-          {['code', 'config', 'all'].map((t) => (
+        {/* Quick Filters */}
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar mask-gradient-right pb-1">
+          {[
+              { id: 'all', label: 'Todo' }, 
+              { id: 'code', label: 'Fuente' }, 
+              { id: 'config', label: 'Config' }
+           ].map((t) => (
             <button
-              key={t}
-              onClick={() => handleSmartSelect(t as any)}
-              className="text-[10px] uppercase tracking-widest text-ash hover:text-ink border border-light px-3 py-1.5 rounded-full hover:border-ink transition-all whitespace-nowrap"
+              key={t.id}
+              onClick={() => handleSmartSelect(t.id as any)}
+              className="text-[10px] font-medium text-ink-subtle hover:text-ink bg-surface border border-stroke hover:border-stroke-emphasis px-2.5 py-0.5 rounded-md transition-all whitespace-nowrap"
             >
-              {t}
+              {t.label}
             </button>
           ))}
+          {selectedCount > 0 && (
+             <button
+               onClick={handleDeselectAll}
+               className="text-[10px] font-medium text-status-error/70 hover:text-status-error px-1 transition-colors"
+             >
+               Limpiar
+             </button>
+          )}
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-20 pt-4">
-        {filteredRoot && <TreeRow node={filteredRoot} depth={0} />}
+      {/* File Tree */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-4 space-y-0.5">
+        {filteredRoot ? (
+            <TreeRow node={filteredRoot} depth={0} />
+        ) : (
+             <div className="flex flex-col items-center justify-center pt-20 text-ink-subtle/30 space-y-3">
+                 <Search size={32} strokeWidth={1} className="opacity-20" />
+                 <span className="text-[11px] font-mono">Nada por aquí</span>
+             </div>
+        )}
       </div>
+      
+      {/* Footer */}
+      <footer className="px-4 py-2 border-t border-stroke/50 bg-surface-muted/50 flex items-center justify-between mt-auto">
+          <div className="flex items-center gap-1.5 opacity-40">
+              <FolderOpen size={10} />
+              <span className="text-[9px] font-mono">{tree?.fileCount || 0} items</span>
+          </div>
+          <div className="text-[9px] font-mono opacity-20 uppercase tracking-widest">v0.1.0</div>
+      </footer>
     </div>
   );
 };

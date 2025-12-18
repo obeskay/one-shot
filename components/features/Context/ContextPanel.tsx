@@ -99,122 +99,71 @@ export const ContextPanel: React.FC = () => {
   };
 
   const handleCopyPreview = async () => {
-    try {
-      await navigator.clipboard.writeText(previewContent);
-      addToast('success', 'Preview copiado al portapapeles');
-    } catch (err) {
-      addToast('error', 'Error al copiar preview');
-    }
+      if (!previewContent) return;
+      try {
+          await navigator.clipboard.writeText(previewContent);
+          addToast('success', 'Preview copiado al portapapeles');
+      } catch (err) {
+          addToast('error', 'Error al copiar preview');
+      }
   };
 
-  const handleExportJSON = () => {
-    const manifest = {
-      files: fileDetails.map(f => ({ path: f.id, size: f.size, tokens: estimateTokens(f.size) })),
-      totalSize,
-      estimatedTokens,
-      budget: budgetLimit,
-      createdAt: new Date().toISOString(),
+  const handleExportJSON = async () => {
+    if (selectedFiles.length === 0) return;
+    
+    const data = {
+        project: state.projectPath,
+        timestamp: new Date().toISOString(),
+        files: fileDetails,
+        stats: {
+            totalSize,
+            estimatedTokens
+        }
     };
-    const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'context-manifest.json';
+    a.download = `context-export-${new Date().getTime()}.json`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    addToast('success', 'Manifest exportado');
-  };
-
-  const handleBudgetChange = (newBudget: number) => {
-    dispatch({ type: 'SET_BUDGET', payload: newBudget });
+    addToast('success', 'Exportación JSON generada');
   };
 
   return (
-    <div className="flex flex-col h-full bg-background animate-reveal">
-      {/* Header con metricas */}
-      <div className="p-12 border-b border-border">
-        <h2 className="text-3xl font-light tracking-tight lowercase text-primary mb-8">
-          Contexto
-        </h2>
+    <div className="flex flex-col h-full bg-canvas relative overflow-hidden font-sans">
+       {/* Background Decoration */}
+       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-status-active/5 rounded-full blur-[150px] pointer-events-none translate-y-1/2 -translate-x-1/4" />
 
-        <div className="grid grid-cols-3 gap-12 mb-8">
-          <div>
-            <span className="text-[10px] text-secondary uppercase tracking-widest block mb-2">
-              Archivos
-            </span>
-            <span className="text-4xl font-mono text-primary">{fileDetails.length}</span>
+      {/* Header */}
+      <div className="h-14 px-6 border-b border-stroke flex justify-between items-center bg-glass z-20 shrink-0 backdrop-blur-md">
+          <div className="flex items-center gap-3">
+               <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center border border-stroke text-ink-subtle">
+                  <div className="w-4 h-4" /> {/* Icon placeholder or import Layers */}
+              </div>
+              <h2 className="text-lg font-medium text-ink lowercase tracking-tight">contexto</h2>
           </div>
-          <div>
-            <span className="text-[10px] text-secondary uppercase tracking-widest block mb-2">
-              Tamaño
-            </span>
-            <span className="text-4xl font-mono text-primary">{formatBytes(totalSize)}</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-secondary uppercase tracking-widest block mb-2">
-              Tokens (est.)
-            </span>
-            <span className={`text-4xl font-mono ${isOverBudget ? 'text-red-400' : 'text-primary'}`}>
-              {estimatedTokens.toLocaleString('es-MX')}
-            </span>
-          </div>
-        </div>
-
-        {/* Budget selector */}
-        <div className="flex items-center gap-4 mb-6">
-          <span className="text-[10px] text-secondary uppercase tracking-widest">Presupuesto:</span>
-          <select
-            value={budgetLimit}
-            onChange={(e) => handleBudgetChange(Number(e.target.value))}
-            className="bg-surface border border-border rounded px-3 py-1 text-sm text-primary"
-          >
-            <option value={25000}>25k tokens</option>
-            <option value={50000}>50k tokens</option>
-            <option value={100000}>100k tokens</option>
-            <option value={128000}>128k tokens</option>
-            <option value={200000}>200k tokens</option>
-          </select>
-          <span className="text-[10px] text-secondary">
-            {usagePercent.toFixed(0)}% usado
-          </span>
-        </div>
-
-        {/* Barra de progreso mejorada */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-secondary font-mono">
-              {estimatedTokens.toLocaleString('es-MX')} / {budgetLimit.toLocaleString('es-MX')} tokens
-            </span>
-            <span className={`font-medium ${
-              isOverBudget ? 'text-red-400' :
-              usagePercent > 80 ? 'text-yellow-400' :
-              'text-green-400'
-            }`}>
-              {usagePercent.toFixed(1)}%
-            </span>
-          </div>
-          <div className="relative w-full bg-surface h-2 rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all duration-500 ease-out rounded-full ${
-                isOverBudget ? 'bg-red-400' :
-                usagePercent > 80 ? 'bg-yellow-400' :
-                'bg-green-400'
-              }`}
-              style={{ width: `${Math.min(usagePercent, 100)}%` }}
-            />
-          </div>
-          {isOverBudget && (
-            <p className="text-xs text-red-400">
-              Excede el presupuesto por {(estimatedTokens - budgetLimit).toLocaleString('es-MX')} tokens
-            </p>
-          )}
-        </div>
+          
+           {/* Budget Indicator (Small) */}
+           <div className="flex items-center gap-2 text-xs text-ink-muted">
+               <span>{usagePercent.toFixed(1)}%</span>
+               <div className="w-20 h-1.5 bg-surface-elevated rounded-full overflow-hidden">
+                   <div 
+                       className={`h-full rounded-full transition-all duration-500 ${isOverBudget ? 'bg-status-error' : 'bg-status-ready'}`} 
+                       style={{ width: `${usagePercent}%` }}
+                   />
+               </div>
+           </div>
       </div>
 
-      {/* Lista de archivos */}
-      <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
-        {fileDetails.length > 0 ? (
-          <div className="space-y-4">
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+          {fileDetails.length > 0 ? (
+          <div className="space-y-6">
+
+            {/* Header List */}
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="text-xs font-mono text-secondary lowercase">
                 Archivos seleccionados
@@ -224,7 +173,8 @@ export const ContextPanel: React.FC = () => {
               </span>
             </div>
 
-            <div className="space-y-2">
+            {/* List */}
+             <div className="space-y-2">
               {fileDetails.map((file) => (
                 <div
                   key={file.id}

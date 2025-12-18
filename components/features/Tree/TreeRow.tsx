@@ -4,7 +4,7 @@ import { cn, formatBytes } from '../../../utils/cn';
 import { useStore } from '../../../contexts/StoreContext';
 import { getAllFileIds } from '../../../utils/tree-utils';
 import { FileIcon } from './FileIcon';
-import { Check } from 'lucide-react';
+import { Check, ChevronRight } from 'lucide-react';
 
 interface TreeRowProps {
   node: FileNode;
@@ -40,21 +40,23 @@ export const TreeRow: React.FC<TreeRowProps> = memo(({ node, depth }) => {
       }
   };
 
-  const showCheckbox = isHovered || isSelected || isFullySelected;
+  const shouldShowCheckbox = (selected: boolean, fullySelected: boolean, hovered: boolean) => selected || fullySelected || hovered;
 
   return (
-    <div className="animate-fade-in group/row">
+    <div className="w-full">
       <div
         role="treeitem"
         aria-expanded={node.isDir ? isExpanded : undefined}
         aria-selected={isSelected || isFullySelected}
         tabIndex={0}
         className={cn(
-            "group flex items-center h-8 cursor-pointer select-none transition-all duration-300 rounded-lg",
-            "focus:outline-none focus:ring-1 focus:ring-ink focus:ring-offset-1 focus:ring-offset-canvas",
-            (isSelected || isFullySelected) ? "text-ink" : "text-ash hover:text-ink"
+            "group flex items-center h-7 cursor-pointer select-none transition-colors duration-200 rounded-md mx-1 relative",
+            "focus-visible:ring-2 focus-visible:ring-status-ready/30 outline-none",
+            (isSelected || isFullySelected) 
+                ? "text-ink bg-status-ready/5" 
+                : "text-ink-subtle hover:text-ink hover:bg-surface-elevated/50"
         )}
-        style={{ paddingLeft: `${depth * 20 + 8}px` }}
+        style={{ paddingLeft: `${depth * 14 + 6}px` }}
         onClick={handleSelect}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -73,42 +75,39 @@ export const TreeRow: React.FC<TreeRowProps> = memo(({ node, depth }) => {
       >
         <div className="flex items-center gap-2 w-full relative pr-2">
             
-            {/* Hover Indicator Background (Subtle) */}
-            <div className={cn(
-                "absolute inset-0 bg-smoke/30 rounded-lg opacity-0 transition-opacity duration-300 -z-10",
-                isHovered && "opacity-100"
-            )} />
-
-            {/* Checkbox */}
+            {/* Checkbox (optimized visually) */}
             <div
               className={cn(
-                "flex-shrink-0 w-3 h-3 border border-ash rounded-[2px] flex items-center justify-center transition-all duration-300",
+                "flex-shrink-0 w-3 h-3 border rounded-[3px] flex items-center justify-center transition-opacity duration-200",
                 (isSelected || isFullySelected)
-                  ? "bg-ink border-ink"
-                  : "border-ash bg-transparent",
-                showCheckbox ? "opacity-100 scale-100" : "opacity-0 scale-90"
+                  ? "bg-status-ready border-status-ready opacity-100"
+                  : "border-stroke/50 bg-transparent group-hover:border-ink-muted",
+                 !shouldShowCheckbox(isSelected, isFullySelected, isHovered) && "opacity-0"
               )}
             >
               {(isSelected || isFullySelected) && (
-                <Check className="w-2.5 h-2.5 text-canvas" strokeWidth={3} />
+                <Check className="w-2 h-2 text-canvas" strokeWidth={3.5} />
               )}
             </div>
 
             {/* Folder Toggle */}
-            {node.isDir && (
+            {node.isDir ? (
                 <div
                     onClick={handleExpand}
-                    className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-smoke/50 rounded-full cursor-pointer transition-colors"
-                >
-                    <div className={cn(
-                        "w-0 h-0 border-l-[3px] border-l-current border-y-[2px] border-y-transparent transition-transform duration-300 ease-expo",
+                    className={cn(
+                        "flex-shrink-0 w-3.5 h-3.5 flex items-center justify-center rounded cursor-pointer text-ink-subtle hover:text-ink transition-transform duration-200",
                         isExpanded && "rotate-90"
-                    )} />
+                    )}
+                >
+                    <ChevronRight size={10} strokeWidth={2.5} />
                 </div>
-            )}
+            ) : <div className="w-3.5" /> /* spacer */}
 
             {/* Icon */}
-            <div className="flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
+            <div className={cn(
+                "flex-shrink-0 transition-colors",
+                (isSelected || isFullySelected) ? "text-status-ready" : "text-ink-subtle/70 group-hover:text-ink-subtle"
+            )}>
               <FileIcon
                 isDir={node.isDir}
                 expanded={isExpanded}
@@ -118,18 +117,15 @@ export const TreeRow: React.FC<TreeRowProps> = memo(({ node, depth }) => {
 
             {/* Name */}
             <span className={cn(
-                "text-[11px] font-mono truncate transition-all flex-1 min-w-0 tracking-wide",
-                node.isDir ? "font-medium uppercase" : "font-normal lowercase text-ash group-hover/row:text-ink"
+                "text-[11px] font-sans truncate transition-colors flex-1 min-w-0 tracking-tight",
+                node.isDir ? "font-medium text-ink" : "font-normal text-ink-subtle group-hover:text-ink"
             )}>
               {node.name}
             </span>
 
             {/* Size Badge */}
-            {!node.isDir && (
-              <span className={cn(
-                "flex-shrink-0 text-[9px] font-mono text-ash/50 transition-opacity uppercase tracking-widest",
-                isHovered ? "opacity-100" : "opacity-0"
-              )}>
+            {!node.isDir && isHovered && (
+              <span className="flex-shrink-0 text-[9px] font-mono text-ink-subtle/40">
                 {formatBytes(node.size, 0)}
               </span>
             )}
@@ -137,9 +133,7 @@ export const TreeRow: React.FC<TreeRowProps> = memo(({ node, depth }) => {
       </div>
 
       {node.isDir && isExpanded && node.children && (
-        <div className="flex flex-col relative">
-          {/* Vertical Guide Line */}
-          <div className="absolute left-[27px] top-0 bottom-0 w-px bg-smoke/40" style={{ left: `${depth * 20 + 27}px` }} />
+        <div>
           {node.children.map(child => (
             <TreeRow key={child.id} node={child} depth={depth + 1} />
           ))}

@@ -1,44 +1,34 @@
 import React from 'react';
-import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { FileExplorer } from '../features/Tree/FileExplorer';
-import { Dashboard } from '../OneShot/Dashboard';
-import { ChatOverlay } from '../features/Chat/ChatOverlay';
+import { Studio } from '../features/Studio/Studio';
 import { useStore } from '../../contexts/StoreContext';
 import { SettingsModal } from '../features/Settings/SettingsModal';
-import { PromptView } from '../features/Prompt/PromptView';
-import { ContextPanel } from '../features/Context/ContextPanel';
+import { Dashboard } from '../OneShot/Dashboard';
 
 export const AppLayout: React.FC = () => {
     const { state } = useStore();
     const [isSettingsOpen, setSettingsOpen] = React.useState(false);
 
-    const renderMainContent = () => {
-        switch (state.activeTab) {
-            case 'context': return <ContextPanel />;
-            case 'chat': return <PromptView />;
-            case 'tree':
-            default: return <Dashboard />;
-        }
-    };
+    // Hero/Landing si no hay proyecto seleccionado
+    if (!state.projectPath) {
+        return <Dashboard />;
+    }
 
     return (
-        <div className="flex h-screen bg-canvas text-ink font-sans selection:bg-ink selection:text-canvas overflow-hidden antialiased">
-
+        <div className="flex h-screen bg-canvas text-ink font-sans overflow-hidden selection:bg-status-ready selection:text-black">
+            
+            {/* 1. Barra Lateral (Navegación Global) */}
             <Sidebar onSettings={() => setSettingsOpen(true)} />
 
-            {state.projectPath && (
-                <aside className="w-80 border-r border-smoke hidden md:flex flex-col shrink-0 transition-all duration-700 ease-expo bg-canvas/30">
-                    <FileExplorer />
-                </aside>
-            )}
+            {/* 2. Panel Izquierdo (Contexto) */}
+            <aside className="w-72 border-r border-stroke bg-surface/30 flex flex-col shrink-0 transition-all duration-500 ease-expo">
+                <FileExplorer />
+            </aside>
 
-            <main className="flex-1 flex flex-col min-w-0 relative h-full overflow-hidden bg-canvas">
-                <Navbar />
-                <div className="flex-1 overflow-hidden relative transition-opacity duration-700 ease-expo">
-                    {renderMainContent()}
-                    <ChatOverlay />
-                </div>
+            {/* 3. Área Principal (Studio: Composer + Chat) */}
+            <main className="flex-1 flex flex-col min-w-0 relative bg-canvas">
+                <Studio />
             </main>
 
             <SettingsModal isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} />

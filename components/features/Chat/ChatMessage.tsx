@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ChatMessage as IChatMessage } from '../../../types';
 import { cn } from '../../../utils/cn';
-import { User, Bot } from 'lucide-react';
+import { User, Bot, Sparkles, Terminal } from 'lucide-react';
 
 interface ChatMessageProps {
   message: IChatMessage;
@@ -16,86 +16,63 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming =
   return (
     <div
       className={cn(
-        "flex gap-3 animate-fade-in",
-        isUser ? "flex-row-reverse" : "flex-row"
+        "flex w-full group/msg",
+        isUser ? "justify-end" : "justify-start"
       )}
-      style={{
-        animation: 'fadeIn 0.3s ease-in-out',
-      }}
     >
-      {/* Avatar */}
       <div className={cn(
-        "shrink-0 w-8 h-8 rounded-full flex items-center justify-center border",
-        isUser
-          ? "bg-blue-500/10 border-blue-500/30"
-          : "bg-surface border-border"
+        "flex gap-4 max-w-[90%] md:max-w-2xl",
+        isUser ? "flex-row-reverse" : "flex-row"
       )}>
-        {isUser ? (
-          <User size={16} className="text-blue-400" />
-        ) : (
-          <Bot size={16} className="text-secondary" />
-        )}
-      </div>
+        {/* Avatar Area */}
+        <div className="shrink-0 pt-1">
+            <div className={cn(
+                "w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-500",
+                isUser 
+                    ? "bg-surface-elevated border-stroke shadow-sm" 
+                    : "bg-status-ready/10 border-status-ready/20 text-status-ready shadow-glow-subtle"
+            )}>
+                {isUser ? <User size={14} className="text-ink-muted" /> : <Bot size={14} />}
+            </div>
+        </div>
 
-      {/* Content Bubble */}
-      <div className="flex flex-col gap-1 flex-1 min-w-0">
-        {/* Timestamp */}
-        <span className="text-[10px] text-secondary font-mono lowercase px-1">
-          {isUser ? 'usuario' : 'asistente'} :: {new Date(message.timestamp).toLocaleTimeString('es-MX', {hour: '2-digit', minute:'2-digit'})}
-        </span>
-
-        {/* Message Bubble */}
+        {/* Content Area */}
         <div className={cn(
-          "rounded-lg px-4 py-3 text-sm leading-relaxed",
-          "prose prose-invert prose-sm max-w-none",
-          "prose-pre:bg-black/50 prose-pre:border prose-pre:border-border",
-          "prose-code:text-accent prose-code:bg-surface/50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded",
-          isUser
-            ? "bg-blue-500/10 border border-blue-500/30 text-primary ml-auto max-w-[85%]"
-            : "bg-surface/50 border border-border text-secondary max-w-[90%]"
+            "flex flex-col gap-1.5",
+            isUser ? "items-end" : "items-start"
         )}>
-          {message.content ? (
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                code: ({ className, children, ...props }) => {
-                  const hasLanguage = /language-(\w+)/.test(className || '');
-                  const isInline = !hasLanguage && typeof children === 'string' && !children.includes('\n');
+            {/* Metadata */}
+            <div className="flex items-center gap-2 px-1">
+                <span className="text-[10px] font-mono tracking-wider text-ink-subtle uppercase opacity-50">
+                    {isUser ? 'Usuario' : 'One-Shot AI'}
+                </span>
+                <span className="w-1 h-1 rounded-full bg-stroke" />
+                <span className="text-[10px] font-mono text-ink-subtle opacity-40">
+                    {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+            </div>
 
-                  if (isInline) {
-                    return (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    );
-                  }
+            {/* Bubble */}
+            <div className={cn(
+                "rounded-2xl px-5 py-3.5 text-[14px] leading-relaxed transition-all duration-500",
+                isUser 
+                    ? "bg-surface-elevated border border-stroke text-ink" 
+                    : "bg-surface/30 border border-stroke/50 text-ink-muted group-hover/msg:border-stroke group-hover/msg:bg-surface/50"
+            )}>
+                <div className="prose prose-sm prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-surface-muted/50 prose-pre:border prose-pre:border-stroke hover:prose-pre:border-stroke-emphasis transition-colors">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {message.content || (isStreaming ? '' : '...')}
+                    </ReactMarkdown>
+                </div>
 
-                  return (
-                    <pre className={cn("rounded p-2 overflow-x-auto", className)}>
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    </pre>
-                  );
-                },
-                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-              }}
-            >
-              {message.content}
-            </ReactMarkdown>
-          ) : (
-            <span className="text-secondary/50 italic">...</span>
-          )}
-
-          {/* Streaming Cursor */}
-          {isStreaming && !isUser && (
-            <span
-              className="inline-block w-2 h-4 bg-accent ml-1 animate-pulse"
-              style={{
-                animation: 'blink 1s infinite',
-              }}
-            />
-          )}
+                {/* Cursor & Streaming Status */}
+                {isStreaming && (
+                    <div className="flex items-center gap-2 mt-4 text-status-ready animate-reveal">
+                        <span className="w-2 h-2 rounded-full bg-current animate-pulse shadow-glow" />
+                        <span className="text-[10px] font-mono uppercase tracking-widest opacity-60">Procesando</span>
+                    </div>
+                )}
+            </div>
         </div>
       </div>
     </div>

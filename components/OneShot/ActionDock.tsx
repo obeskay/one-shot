@@ -45,7 +45,7 @@ export const ActionDock: React.FC = () => {
     return (
         <>
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-pill border border-stroke bg-canvas/90 backdrop-medium shadow-float transition-all duration-slow hover:border-stroke-emphasis hover:shadow-prominent">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-pill border border-stroke bg-glass shadow-float transition-all duration-slow hover:border-stroke-emphasis hover:shadow-prominent">
 
                     {/* Preview button */}
                     <button

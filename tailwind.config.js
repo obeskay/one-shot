@@ -7,63 +7,37 @@ export default {
     ],
     theme: {
         extend: {
-            // === COLORES ===
             colors: {
-                // Core Mappings (generic aliases used in components)
-                background: 'var(--color-canvas)',
-                border: 'var(--color-stroke)',
-                primary: 'var(--color-ink)',     // Used for main text, active states
-                secondary: 'var(--color-ink-muted)', // Used for secondary text
-                accent: 'var(--color-status-active)',
-
-                // Superficies
                 canvas: 'var(--color-canvas)',
                 surface: {
                     DEFAULT: 'var(--color-surface)',
                     muted: 'var(--color-surface-muted)',
                     elevated: 'var(--color-surface-elevated)',
                 },
-
-                // Dark specific (legacy)
-                dark: {
-                    DEFAULT: 'var(--color-dark)',
-                    surface: 'var(--color-dark-surface)',
-                    muted: 'var(--color-dark-muted)',
-                },
-
-                // Texto & Elementos
                 ink: {
                     DEFAULT: 'var(--color-ink)',
                     muted: 'var(--color-ink-muted)',
                     subtle: 'var(--color-ink-subtle)',
                     inverted: 'var(--color-ink-inverted)',
                 },
-
-                // Bordes
                 stroke: {
                     DEFAULT: 'var(--color-stroke)',
                     subtle: 'var(--color-stroke-subtle)',
                     emphasis: 'var(--color-stroke-emphasis)',
-                    dark: 'var(--color-stroke-dark)',
                 },
-
-                // Semánticos
                 status: {
                     ready: 'var(--color-status-ready)',
                     active: 'var(--color-status-active)',
                     warning: 'var(--color-status-warning)',
                     error: 'var(--color-status-error)',
                 },
-
-                // Legacy aliases
-                ash: 'var(--color-ash)',
-                smoke: 'var(--color-smoke)',
+                accent: 'var(--color-status-active)',
             },
 
             // === TIPOGRAFÍA ===
             fontFamily: {
-                sans: ['"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
-                mono: ['"SF Mono"', '"Fira Code"', 'Consolas', 'monospace'],
+                sans: ['Inter', 'system-ui', 'sans-serif'],
+                mono: ['"SF Mono"', '"Fira Code"', 'monospace'],
             },
 
             fontSize: {
@@ -111,32 +85,29 @@ export default {
                 'large': '16px',
                 'xl': '24px',
                 'pill': '9999px',
-                'organic-sm': '20px',
-                'organic': '40px',
-                'organic-lg': '80px',
             },
 
             // === SOMBRAS ===
             boxShadow: {
-                'subtle': '0 1px 2px rgba(0,0,0,0.04)',
-                'base': '0 2px 8px rgba(0,0,0,0.06)',
-                'elevated': '0 4px 16px rgba(0,0,0,0.08)',
-                'prominent': '0 8px 32px rgba(0,0,0,0.12)',
-                'float': '0 12px 40px rgba(0,0,0,0.15)',
-                'slide-up': '0 -50px 100px -20px rgba(0,0,0,0.3)',
+                'subtle': 'var(--shadow-subtle)',
+                'base': 'var(--shadow-base)',
+                'elevated': 'var(--shadow-elevated)',
+                'glow': 'var(--shadow-glow)',
+                'glow-active': 'var(--shadow-glow-active)',
             },
 
             // === ANIMACIONES ===
             animation: {
-                'reveal': 'reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                'fade-in': 'fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                'reveal': 'reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                'fade-in': 'fadeIn 0.4s ease-out forwards',
                 'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                'pulse-subtle': 'pulseSubtle 3s ease-in-out infinite',
+                'pop-in': 'popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
             },
 
             keyframes: {
                 reveal: {
-                    '0%': { opacity: '0', transform: 'translateY(20px)' },
+                    '0%': { opacity: '0', transform: 'translateY(12px)' },
                     '100%': { opacity: '1', transform: 'translateY(0)' },
                 },
                 fadeIn: {
@@ -147,10 +118,14 @@ export default {
                     '0%': { opacity: '0', transform: 'translateY(10px)' },
                     '100%': { opacity: '1', transform: 'translateY(0)' },
                 },
-                pulseSubtle: {
-                    '0%, 100%': { opacity: '1' },
-                    '50%': { opacity: '0.6' },
+                popIn: {
+                    '0%': { opacity: '0', transform: 'scale(0.95)' },
+                    '100%': { opacity: '1', transform: 'scale(1)' },
                 },
+                pulseGlow: {
+                    '0%, 100%': { opacity: '1', boxShadow: '0 0 20px var(--color-accent-glow)' },
+                    '50%': { opacity: '0.7', boxShadow: '0 0 10px var(--color-accent-glow)' },
+                }
             },
 
             // === TRANSICIONES ===
@@ -162,10 +137,7 @@ export default {
             },
 
             transitionTimingFunction: {
-                'standard': 'cubic-bezier(0.4, 0, 0.2, 1)',
-                'expo-out': 'cubic-bezier(0.16, 1, 0.3, 1)',
-                'enter': 'cubic-bezier(0, 0, 0.2, 1)',
-                'exit': 'cubic-bezier(0.4, 0, 1, 1)',
+                'expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
             },
         },
     },

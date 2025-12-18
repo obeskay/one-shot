@@ -15,16 +15,18 @@ import (
 	"shotgun/internal/fs"
 	"shotgun/internal/jobs"
 	"shotgun/internal/llm"
+	"shotgun/internal/secrets"
 )
 
 // App estructura principal de la aplicacion Wails
 type App struct {
-	ctx        context.Context
-	scanner    *fs.Scanner
-	jobManager *jobs.Manager
-	llmService *llm.Service
-	ctxBuilder *ctx.Builder
-	logger     *slog.Logger
+	ctx         context.Context
+	scanner     *fs.Scanner
+	jobManager  *jobs.Manager
+	llmService  *llm.Service
+	ctxBuilder  *ctx.Builder
+	secretStore *secrets.Store
+	logger      *slog.Logger
 }
 
 // New crea una nueva instancia de la aplicacion
@@ -34,10 +36,11 @@ func New() *App {
 	}))
 
 	return &App{
-		scanner:    fs.NewScanner(),
-		jobManager: jobs.NewManager(),
-		llmService: llm.NewService(),
-		logger:     logger,
+		scanner:     fs.NewScanner(),
+		jobManager:  jobs.NewManager(),
+		llmService:  llm.NewService(),
+		secretStore: secrets.NewStore(logger),
+		logger:      logger,
 	}
 }
 
@@ -45,9 +48,6 @@ func New() *App {
 func (a *App) Startup(wailsCtx context.Context) {
 	a.ctx = wailsCtx
 	a.logger.Info("OneShot iniciado", "platform", goruntime.GOOS)
-
-	// Registrar providers de LLM (API keys vienen del frontend por ahora)
-	// En produccion, leer de configuracion
 }
 
 // Shutdown se llama cuando la aplicacion se cierra
@@ -232,40 +232,49 @@ func (a *App) FormatContext(payload domain.ContextPayloadDTO) string {
 func (a *App) ConfigureLLM(provider string, apiKey string, baseURL string) error {
 	a.logger.Info("Configurando LLM provider", "provider", provider)
 
-	var p llm.Provider
-	var err error
+	// Secure Storage Logic
+	if apiKey != "" {
+		// Save new key securely
+		if err := a.secretStore.Set(fmt.Sprintf("%s_api_key", provider), apiKey); err != nil {
+			a.logger.Warn("No se pudo guardar la API key en keyring", "error", err)
+		}
+	} else {
+		// Try to retrieve existing key
+		storedKey, err := a.secretStore.Get(fmt.Sprintf("%s_api_key", provider))
+		if err == nil && storedKey != "" {
+			apiKey = storedKey
+			a.logger.Info("API key recuperada del keyring", "provider", provider)
+		}
+	}
 
-	switch provider {
-	case "openai":
-		p = llm.NewOpenAIProvider(apiKey, baseURL)
-	case "openrouter":
-		p = llm.NewOpenRouterProvider(apiKey)
-	case "gemini":
-		// Usar SDK oficial de Google si hay API key o env var
-		p, err = llm.NewGeminiSDKProvider(a.ctx, apiKey)
-		if err != nil {
-			// Fallback a implementación HTTP básica
-			a.logger.Warn("Fallback a Gemini HTTP provider", "error", err)
-			p = llm.NewGeminiProvider(apiKey)
-		}
-	case "anthropic":
-		p = llm.NewAnthropicProvider(apiKey)
-	case "local-cli":
-		// Claude Code CLI - no requiere API key, usa CLI instalado
-		workDir := ""
-		if a.ctxBuilder != nil {
-			workDir = a.ctxBuilder.ProjectPath()
-		}
-		p = llm.NewClaudeCodeProvider(workDir)
-		a.logger.Info("Claude Code CLI configurado", "workDir", workDir)
-	default:
-		a.logger.Error("Provider desconocido", "provider", provider)
-		return fmt.Errorf("unknown provider: %s", provider)
+	// Preparar ejecución para la fábrica
+	workDir := ""
+	if a.ctxBuilder != nil {
+		workDir = a.ctxBuilder.ProjectPath()
+	}
+
+	cfg := llm.FactoryConfig{
+		Provider: provider,
+		APIKey:   apiKey,
+		BaseURL:  baseURL,
+		WorkDir:  workDir,
+	}
+
+	// Delegar creación a la fábrica
+	p, err := llm.NewProvider(a.ctx, cfg)
+	if err != nil {
+		a.logger.Error("Error creando provider", "error", err)
+		return err
 	}
 
 	a.llmService.RegisterProvider(domain.ProviderID(provider), p)
 	a.logger.Info("LLM provider configurado exitosamente", "provider", provider)
 	return nil
+}
+
+// GetProviders retorna la lista de providers soportados
+func (a *App) GetProviders() []domain.ProviderDTO {
+	return domain.GetProviderRegistry()
 }
 
 // RunPrompt ejecuta un prompt contra el LLM

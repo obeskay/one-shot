@@ -182,13 +182,7 @@ type ContextPayloadDTO struct {
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ProviderID identificador del proveedor LLM
-type ProviderID string
-
-const (
-	ProviderOpenAI     ProviderID = "openai"
-	ProviderGemini     ProviderID = "gemini"
-	ProviderOpenRouter ProviderID = "openrouter"
-)
+// Defined in providers.go
 
 // ChatRole rol en la conversación
 type ChatRole string

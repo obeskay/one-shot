@@ -30,6 +30,7 @@ declare global {
           RunPrompt(spec: PromptRunSpecDTO): Promise<PromptRunResultDTO>;
           StreamPrompt(spec: PromptRunSpecDTO): Promise<string>; // Retorna jobId
           StopStream(jobId: string): Promise<void>;
+          GetProviders(): Promise<import('../types/domain').ProviderDTO[]>;
         };
       };
     };
@@ -67,8 +68,8 @@ function convertTreeDTO(dto: TreeSnapshotDTO): TreeSnapshot {
 // Detecta si estamos en entorno Wails o desarrollo web
 function isWailsEnvironment(): boolean {
   return typeof window !== 'undefined' &&
-         typeof window.go !== 'undefined' &&
-         typeof window.go.app !== 'undefined';
+    typeof window.go !== 'undefined' &&
+    typeof window.go.app !== 'undefined';
 }
 
 // Mock para desarrollo web sin backend
@@ -92,9 +93,11 @@ const MockBridge = {
         size: 0,
         modTime: new Date().toISOString(),
         children: [
-          { id: 'src', name: 'src', path: 'src', isDir: true, size: 0, modTime: new Date().toISOString(), children: [
-            { id: 'src/main.ts', name: 'main.ts', path: 'src/main.ts', isDir: false, size: 512, modTime: new Date().toISOString() },
-          ]},
+          {
+            id: 'src', name: 'src', path: 'src', isDir: true, size: 0, modTime: new Date().toISOString(), children: [
+              { id: 'src/main.ts', name: 'main.ts', path: 'src/main.ts', isDir: false, size: 512, modTime: new Date().toISOString() },
+            ]
+          },
           { id: 'package.json', name: 'package.json', path: 'package.json', isDir: false, size: 256, modTime: new Date().toISOString() },
         ],
       },
@@ -149,6 +152,14 @@ const MockBridge = {
     console.warn('[Bridge] Modo mock: ConfigureLLM', { provider, hasKey: !!apiKey, baseURL });
     // Simular delay de configuración
     await new Promise(resolve => setTimeout(resolve, 500));
+  },
+
+  async GetProviders(): Promise<import('../types/domain').ProviderDTO[]> {
+    console.warn('[Bridge] Modo mock: GetProviders');
+    return [
+      { id: 'openai', name: 'OpenAI (Mock)', models: [], icon: '🤖' },
+      { id: 'anthropic', name: 'Anthropic (Mock)', models: [], icon: '🧠' }
+    ] as any;
   },
 };
 
@@ -373,6 +384,10 @@ const WailsBridge = {
   setCurrentProjectPath(path: string): void {
     currentProjectPath = path;
   },
+
+  async GetProviders(): Promise<import('../types/domain').ProviderDTO[]> {
+    return await window.go.app.App.GetProviders();
+  },
 };
 
 // Exportar bridge apropiado segun entorno
@@ -385,10 +400,10 @@ export const WailsExtras = isWailsEnvironment() ? {
   BuildContext: WailsBridge.BuildContext,
   CancelJob: WailsBridge.CancelJob,
   GetJobStatus: WailsBridge.GetJobStatus,
-  ConfigureLLM: WailsBridge.ConfigureLLM,
   GetPlatform: WailsBridge.GetPlatform,
   getCurrentProjectPath: WailsBridge.getCurrentProjectPath,
   setCurrentProjectPath: WailsBridge.setCurrentProjectPath,
+  GetProviders: WailsBridge.GetProviders,
 } : null;
 
 // Helpers para manejo robusto de eventos
@@ -399,7 +414,7 @@ export function createEventListener<T = unknown>(
 ): () => void {
   if (!isWailsEnvironment()) {
     console.warn(`[Bridge] EventListener "${eventName}" en modo mock`);
-    return () => {};
+    return () => { };
   }
 
   const cleanup = window.runtime.EventsOn(eventName, (data: unknown) => {

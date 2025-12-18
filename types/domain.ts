@@ -116,9 +116,33 @@ export type ContextPayloadDTO = {
   createdAt: ISOTime;
 };
 
-// ---------------------------------------------------------------------------
-// LLM / Prompt
-// ---------------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════════════════
+// LLM / Prompt DTOs
+// ══════════════════════════════════════════════════════════════════════════════
+
+export interface ModelCapabilitiesDTO {
+  canStream: boolean;
+  canThink: boolean;
+  canSearch: boolean;
+  canVision: boolean;
+  supportsJson: boolean;
+}
+
+export interface ModelDTO {
+  id: string;
+  name: string;
+  providerId: string;
+  capabilities: ModelCapabilitiesDTO;
+  contextSize: number;
+}
+
+export interface ProviderDTO {
+  id: string;
+  name: string;
+  models: ModelDTO[];
+  icon: string;
+  baseUrl?: string;
+}
 
 export type ProviderID = "openai" | "gemini" | "openrouter";
 export type ChatRole = "system" | "user" | "assistant";

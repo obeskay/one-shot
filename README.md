@@ -16,7 +16,7 @@ One-Shot is a developer tool designed to streamline the process of creating cont
 
 ### Prerequisites
 
-- [Go](https://go.dev/) 1.21+
+- [Go](https://go.dev/) 1.24+
 - [Node.js](https://nodejs.org/) 20+
 - [Wails](https://wails.io/) v2
 

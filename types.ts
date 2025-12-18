@@ -1,6 +1,6 @@
 export type ContextStrategy = 'precise' | 'conceptual';
 
-export type ProviderType = 'gemini' | 'anthropic' | 'openai' | 'openrouter' | 'deepseek' | 'local';
+export type ProviderType = 'gemini' | 'anthropic' | 'openai' | 'openrouter' | 'deepseek' | 'local' | 'local-cli';
 
 export interface ProviderConfig {
   id: ProviderType;
@@ -106,6 +106,9 @@ export interface AppState {
   // Intent-First UX
   intent: string;
   budgetTokens: number;
+
+  // Dynamic Data
+  providers: ProviderConfig[];
 
   // Job tracking
   currentJobId: string | null;

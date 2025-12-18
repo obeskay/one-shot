@@ -17,18 +17,19 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<ButtonVariant, string> = {
   primary: cn(
-    'bg-ink text-ink-inverted border border-transparent',
-    'hover:bg-ink-muted hover:shadow-elevated',
-    'active:scale-[0.98]'
+    'bg-status-ready text-canvas border border-transparent',
+    'hover:bg-status-active hover:shadow-glow',
+    'active:scale-[0.98]',
+    'shadow-sm'
   ),
   secondary: cn(
-    'bg-surface text-ink border border-stroke',
-    'hover:border-stroke-emphasis hover:bg-surface-muted',
+    'bg-surface-elevated text-ink border border-stroke',
+    'hover:border-stroke-emphasis hover:bg-surface-elevated/80',
     'active:scale-[0.98]'
   ),
   ghost: cn(
     'bg-transparent text-ink-muted',
-    'hover:text-ink hover:bg-surface',
+    'hover:text-ink hover:bg-surface-elevated/50',
     'active:scale-[0.98]'
   ),
   danger: cn(
@@ -38,7 +39,7 @@ const variants: Record<ButtonVariant, string> = {
   ),
   outline: cn(
     'bg-transparent text-ink border border-stroke',
-    'hover:border-stroke-emphasis hover:bg-surface-muted',
+    'hover:border-stroke-emphasis hover:bg-surface-elevated/50',
     'active:scale-[0.98]'
   ),
   link: cn(

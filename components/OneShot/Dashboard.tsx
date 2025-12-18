@@ -1,103 +1,23 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { useStore } from '../../contexts/StoreContext';
-import { StrategySelector } from './StrategySelector';
-import { FileCard } from './FileCard';
-import { ActionDock } from './ActionDock';
-import { ArrowDown, ArrowUpRight, Sparkles, Folder, FileText, Zap, ChevronDown } from 'lucide-react';
-import { Bridge } from '../../services/bridge';
-import { useToast } from '../../contexts/ToastContext';
-import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
-import { Select } from '../ui/Select';
-import type { FileNode } from '../../types';
-import { estimateTokens, formatNumber, cn } from '../../utils/cn';
+import { useOneShotGenerator } from '../../hooks/useOneShotGenerator';
+import { ArrowUpRight, Sparkles, FileText, Box } from 'lucide-react';
+import { formatNumber } from '../../utils/cn';
 import { findNodeById } from '../../utils/tree-utils';
 
 export const Dashboard: React.FC = () => {
   const { state, dispatch } = useStore();
-  const { addToast } = useToast();
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  const selectedFiles: string[] = useMemo(
-    () => Array.from(state.selectedFileIds),
-    [state.selectedFileIds]
-  );
-
-  const { totalSize, totalTokens, fileCount } = useMemo(() => {
-    if (!state.tree?.root) return { totalSize: 0, totalTokens: 0, fileCount: 0 };
-
-    let size = 0;
-    let count = 0;
-    for (const id of selectedFiles) {
-      const node = findNodeById(state.tree.root, id);
-      if (node && !node.isDir) {
-        size += node.size;
-        count++;
-      }
-    }
-    return { totalSize: size, totalTokens: estimateTokens(size), fileCount: count };
-  }, [selectedFiles, state.tree]);
-
-  const usagePercent = Math.min((totalTokens / state.budgetTokens) * 100, 100);
-  const isOverBudget = totalTokens > state.budgetTokens;
-
-  const handleOpen = async () => {
-    dispatch({ type: 'SET_LOADING', payload: true });
-    try {
-      const path = await Bridge.SelectProject();
-      if (path) {
-        const tree = await Bridge.ScanProject(path);
-        dispatch({ type: 'SET_PROJECT', payload: { path, tree } });
-      }
-    } catch (err) {
-      addToast('error', 'Error al abrir proyecto');
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
-    }
-  };
-
-  const handleGenerate = async () => {
-    if (fileCount === 0) {
-      addToast('error', 'Selecciona al menos un archivo');
-      return;
-    }
-    if (!state.intent.trim()) {
-      addToast('error', 'Describe tu objetivo');
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      let contextPayload = '';
-      for (const id of selectedFiles) {
-        const content = await Bridge.GetFileContent(id);
-        contextPayload += `<file path="${id}">\n${content}\n</file>\n\n`;
-      }
-
-      const systemPrompt = `Eres un asistente experto en desarrollo de software.
-El usuario te proporciona archivos de codigo como contexto y un objetivo.
-Analiza el contexto y genera una solucion completa.
-
-CONTEXTO DEL PROYECTO:
-${contextPayload}`;
-
-      const fullPrompt = `OBJETIVO: ${state.intent}
-
-Por favor, genera una solucion completa que incluya:
-1. Analisis del codigo existente
-2. Cambios propuestos (con diff cuando sea posible)
-3. Nuevos archivos si son necesarios
-4. Comandos de terminal si aplica`;
-
-      await navigator.clipboard.writeText(`${systemPrompt}\n\n${fullPrompt}`);
-      addToast('success', 'Prompt copiado al portapapeles');
-
-    } catch (err) {
-      addToast('error', 'Error al generar prompt');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  
+  // Usamos el hook refactorizado
+  const { 
+      selectedFiles, 
+      stats, 
+      usagePercent, 
+      isOverBudget, 
+      isGenerating, 
+      handleOpenProject, 
+      generatePrompt 
+  } = useOneShotGenerator();
 
   // ═══════════════════════════════════════════════════════════
   // HERO STATE (Sin proyecto)
@@ -105,55 +25,51 @@ Por favor, genera una solucion completa que incluya:
   if (!state.projectPath) {
     return (
       <div className="flex-1 flex flex-col h-full bg-canvas relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-surface rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 -z-10 opacity-40" />
+        {/* Animated Background Gradients */}
+        <div className="absolute top-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-status-ready/10 rounded-full blur-[120px] animate-pulse-glow" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-blue-500/5 rounded-full blur-[100px]" />
+        
+        <div className="flex-grow flex items-center justify-center">
+            <div className="relative animate-reveal">
+                <div className="absolute inset-0 bg-status-ready/20 blur-[60px] rounded-full scale-150 opacity-50" />
+                <div className="relative w-32 h-32 md:w-48 md:h-48 rounded-[2rem] bg-surface-elevated/50 border border-stroke-emphasis flex items-center justify-center shadow-elevated backdrop-blur-xl group hover:border-status-ready/40 transition-all duration-700">
+                    <Box size={56} className="text-status-ready group-hover:scale-110 transition-transform duration-700" strokeWidth={1.5} />
+                </div>
+            </div>
+        </div>
 
-        {/* Spacer */}
-        <div className="flex-grow" />
-
-        {/* Main content */}
-        <div className="flex flex-col md:flex-row justify-between items-end w-full px-8 md:px-12 pb-8 md:pb-12 border-b border-stroke">
-          {/* Left: Description + CTA */}
+        <div className="flex flex-col md:flex-row justify-between items-end w-full px-8 md:px-16 pb-8 md:pb-16 border-b border-stroke/50 z-10">
           <div className="animate-reveal mb-8 md:mb-0 w-full md:w-auto">
-            <p className="text-sm font-normal leading-relaxed text-ink-subtle lowercase max-w-xs tracking-wide mb-8">
-              constructor de contexto para llms. selecciona archivos,
-              define tu objetivo, genera prompts estructurados.
+            <p className="text-sm font-medium leading-relaxed text-ink-muted lowercase max-w-[280px] tracking-tight mb-10 opacity-70">
+              The intelligent context engine for LLMs. Select your source, define your goal, build perfect prompts.
             </p>
-
             <button
-              onClick={handleOpen}
+              onClick={handleOpenProject}
               disabled={state.isLoading}
-              className="group inline-flex items-center gap-2 text-micro font-medium uppercase tracking-widest border-b border-stroke pb-1 transition-all duration-normal hover:border-ink hover:text-ink-muted disabled:opacity-50"
+              className="group flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-ink hover:text-status-ready transition-all duration-500"
             >
-              {state.isLoading ? 'cargando...' : 'abrir repositorio'}
-              <ArrowUpRight
-                size={14}
-                className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-normal"
-              />
+              <div className="w-8 h-8 rounded-full border border-stroke flex items-center justify-center group-hover:border-status-ready group-hover:bg-status-ready/5 transition-all duration-500">
+                <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </div>
+              {state.isLoading ? 'Cargando...' : 'Abrir repositorio'}
             </button>
           </div>
-
-          {/* Right: Headline */}
           <div className="text-left md:text-right animate-reveal delay-100">
-            <h1 className="text-display lowercase leading-[0.85] font-semibold text-ink tracking-tighter">
-              contexto<br />
-              simplificado<br />
-              <span className="text-ink-subtle">one-shot</span>
+            <h1 className="text-[12vw] md:text-[8vw] leading-[0.8] font-bold text-ink tracking-tighter lowercase select-none">
+                One<br /><span className="text-status-ready">Shot</span>
             </h1>
           </div>
         </div>
-
-        {/* Bottom status bar */}
-        <div className="w-full px-8 md:px-12 py-6 flex justify-between items-center animate-reveal delay-200">
+        
+        <div className="w-full px-8 md:px-16 py-8 flex justify-between items-center animate-reveal delay-200 bg-surface/20 backdrop-blur-sm">
           <div className="flex gap-8">
-            <span className="text-xs font-medium lowercase flex items-center gap-2">
-              <span className="w-2 h-2 bg-status-ready rounded-full animate-pulse" />
-              listo para trabajar
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] flex items-center gap-2 text-ink-subtle">
+              <span className="w-1.5 h-1.5 bg-status-ready rounded-full shadow-glow" />
+              Engine v0.1.0 Ready
             </span>
           </div>
-
-          <div className="text-micro text-ink-subtle uppercase tracking-widest animate-pulse-subtle">
-            selecciona un proyecto
+          <div className="text-[10px] font-mono text-ink-subtle uppercase tracking-[0.2em] opacity-40">
+            Awaiting input
           </div>
         </div>
       </div>
@@ -165,8 +81,6 @@ Por favor, genera una solucion completa que incluya:
   // ═══════════════════════════════════════════════════════════
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-canvas relative font-sans selection:bg-status-ready selection:text-black">
-      
-      {/* Header */}
       <header className="px-10 pt-10 pb-6 flex justify-between items-center animate-reveal">
         <h1 className="text-h2 font-light lowercase text-ink tracking-tight">dashboard</h1>
         <button className="text-ink-subtle hover:text-ink transition-colors">
@@ -175,7 +89,6 @@ Por favor, genera una solucion completa que incluya:
         </button>
       </header>
       
-      {/* SVG Defs for Graphs */}
       <svg className="absolute w-0 h-0">
         <defs>
             <linearGradient id="gradient-files" x1="0" y1="0" x2="0" y2="1">
@@ -186,18 +99,14 @@ Por favor, genera una solucion completa que incluya:
       </svg>
 
       <div className="flex-1 overflow-y-auto px-10 pb-32 scrollbar-hidden">
-
-        {/* Separator */}
         <div className="w-full h-px bg-stroke mb-8 animate-reveal delay-100" />
 
         {/* Stats Grid */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 animate-reveal delay-200">
-            {/* Files Card */}
             <div className="group relative p-6 bg-surface border border-stroke rounded-xl h-40 flex flex-col justify-between hover:border-stroke-emphasis hover:shadow-glow-subtle transition-all duration-300">
                 <span className="text-sm text-ink-muted lowercase font-medium">files</span>
                 <div className="flex items-end justify-between">
-                    <span className="text-4xl font-light text-ink tracking-tighter">{formatNumber(fileCount)}</span>
-                    {/* Tiny Graph Decoration */}
+                    <span className="text-4xl font-light text-ink tracking-tighter">{formatNumber(stats.fileCount)}</span>
                     <svg className="w-16 h-8 text-ink-subtle opacity-50 group-hover:text-status-ready group-hover:opacity-100 transition-colors" viewBox="0 0 64 32" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M0 28 C10 28, 15 15, 25 20 C35 25, 40 5, 50 10 C55 12, 60 0, 64 0" vectorEffect="non-scaling-stroke"/>
                         <path d="M0 28 L64 28" strokeWidth="0" fill="url(#gradient-files)" className="opacity-20"/>
@@ -205,18 +114,16 @@ Por favor, genera una solucion completa que incluya:
                 </div>
             </div>
 
-            {/* Tokens Card */}
             <div className="group relative p-6 bg-surface border border-stroke rounded-xl h-40 flex flex-col justify-between hover:border-stroke-emphasis hover:shadow-glow-subtle transition-all duration-300">
                 <span className="text-sm text-ink-muted lowercase font-medium">tokens</span>
                 <div className="flex items-end justify-between">
-                    <span className="text-4xl font-light text-ink tracking-tighter">{totalTokens > 1000 ? `${(totalTokens/1000).toFixed(0)}k` : totalTokens}</span>
+                    <span className="text-4xl font-light text-ink tracking-tighter">{stats.totalTokens > 1000 ? `${(stats.totalTokens/1000).toFixed(0)}k` : stats.totalTokens}</span>
                     <svg className="w-16 h-8 text-ink-subtle opacity-50 group-hover:text-status-ready group-hover:opacity-100 transition-colors" viewBox="0 0 64 32" fill="none" stroke="currentColor" strokeWidth="2">
                          <path d="M0 25 C10 25, 20 20, 30 22 C40 24, 50 10, 64 5" vectorEffect="non-scaling-stroke"/>
                     </svg>
                 </div>
             </div>
 
-            {/* Budget Card */}
             <div className="group relative p-6 bg-surface border border-stroke rounded-xl h-40 flex flex-col justify-between hover:border-stroke-emphasis hover:shadow-glow-subtle transition-all duration-300">
                 <span className="text-sm text-ink-muted lowercase font-medium">budget</span>
                 <div>
@@ -233,26 +140,23 @@ Por favor, genera una solucion completa que incluya:
             </div>
         </section>
 
-        {/* Main Action - Centered Large Button */}
+        {/* Main Action */}
         <section className="flex justify-center items-center py-10 animate-reveal delay-300">
             <button
-                onClick={handleGenerate}
-                disabled={fileCount === 0 || isGenerating}
+                onClick={generatePrompt}
+                disabled={stats.fileCount === 0 || isGenerating}
                 className="group relative w-full max-w-lg h-20 rounded-pill bg-surface border border-stroke hover:border-status-ready hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden"
             >
-                {/* Background Hover Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                
                 <span className="text-xl font-light lowercase text-ink tracking-wide z-10">
                     {isGenerating ? 'generating...' : 'generate one-shot'}
                 </span>
-                
                 {!isGenerating && <Sparkles className="w-5 h-5 text-status-ready z-10 animate-pulse-glow" />}
             </button>
         </section>
 
-        {/* Selected Files List (Visible but subtle) */}
-        {fileCount > 0 && (
+        {/* Selected Files List */}
+        {stats.fileCount > 0 && (
           <section className="animate-slide-up mt-12">
             <div className="flex items-center justify-between mb-6 px-2">
               <span className="text-micro font-mono text-ink-subtle uppercase tracking-widest">
@@ -280,7 +184,6 @@ Por favor, genera una solucion completa que incluya:
             </div>
           </section>
         )}
-
       </div>
     </div>
   );
