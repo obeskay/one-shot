@@ -8,6 +8,7 @@ import { Switch } from '../../ui/Switch';
 import { ProviderType } from '../../../types';
 import { Bridge } from '../../../services/bridge';
 import { Check, Eye, EyeOff, Key, Terminal, Cpu } from 'lucide-react';
+import { cn } from '../../../utils/cn';
 
 interface SettingsModalProps {
   isOpen: boolean;

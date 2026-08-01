@@ -5,6 +5,8 @@ import { Bridge } from '../services/bridge';
 import { estimateTokens } from '../utils/cn';
 import { findNodeById } from '../utils/tree-utils';
 
+import { copyToClipboard } from '../utils/clipboard';
+
 export const useOneShotGenerator = () => {
     const { state, dispatch } = useStore();
     const { addToast } = useToast();
@@ -64,13 +66,14 @@ export const useOneShotGenerator = () => {
 
         setIsGenerating(true);
         try {
-            let contextPayload = '';
-            // Optimización: Promise.all para lectura paralela si el backend lo soporta, 
-            // o secuencial para evitar saturación. Mantenemos secuencial por seguridad de I/O.
-            for (const id of selectedFiles) {
-                const content = await Bridge.GetFileContent(id);
-                contextPayload += `<file path="${id}">\n${content}\n</file>\n\n`;
-            }
+            // Lectura paralela de archivos para máxima velocidad
+            const contents = await Promise.all(
+                selectedFiles.map(async (id) => {
+                    const content = await Bridge.GetFileContent(id);
+                    return `<file path="${id}">\n${content}\n</file>`;
+                })
+            );
+            const contextPayload = contents.join('\n\n');
 
             const systemPrompt = `Eres un asistente experto en desarrollo de software.
 El usuario te proporciona archivos de codigo como contexto y un objetivo.
@@ -87,8 +90,12 @@ Por favor, genera una solucion completa que incluya:
 3. Nuevos archivos si son necesarios
 4. Comandos de terminal si aplica`;
 
-            await navigator.clipboard.writeText(`${systemPrompt}\n\n${fullPrompt}`);
-            addToast('success', 'Prompt copiado al portapapeles');
+            const copied = await copyToClipboard(`${systemPrompt}\n\n${fullPrompt}`);
+            if (copied) {
+                addToast('success', 'Prompt copiado al portapapeles');
+            } else {
+                addToast('error', 'No se pudo copiar al portapapeles');
+            }
 
         } catch (err) {
             console.error(err);
