@@ -7,6 +7,7 @@ import { Input } from '../../ui/Input';
 import { ArrowRight, Check, Eye, EyeOff, Terminal, Key, Zap } from 'lucide-react';
 import { Bridge } from '../../../services/bridge';
 import { ModelService } from '../../../services/ModelService';
+import { BrandIcon } from '../../ui/BrandIcons';
 
 export const SetupWizard: React.FC = () => {
   const { state, dispatch } = useStore();
@@ -193,7 +194,7 @@ export const SetupWizard: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-start justify-between mb-4">
-                     <span className={`text-2xl transition-all duration-300 ${selectedProvider === p.id ? 'opacity-100 scale-110' : 'opacity-70 group-hover:opacity-100 group-hover:scale-105'}`}>{p.icon}</span>
+                     <BrandIcon id={p.id} size={28} className={`transition-all duration-300 ${selectedProvider === p.id ? 'opacity-100 scale-110' : 'opacity-70 group-hover:opacity-100 group-hover:scale-105'}`} />
                      {selectedProvider === p.id && <div className="w-1.5 h-1.5 rounded-full bg-status-ready animate-pulse shadow-glow" />}
                   </div>
                   
