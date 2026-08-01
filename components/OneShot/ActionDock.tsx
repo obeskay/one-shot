@@ -7,6 +7,7 @@ import { cn } from '../../utils/cn';
 import { useToast } from '../../contexts/ToastContext';
 import { copyToClipboard } from '../../utils/clipboard';
 import { PreviewModal } from '../features/Preview/PreviewModal';
+import { BrandIcon } from '../ui/BrandIcons';
 
 export const ActionDock: React.FC = () => {
     const { state, dispatch } = useStore();
@@ -100,7 +101,7 @@ export const ActionDock: React.FC = () => {
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-status-ready/15 border border-status-ready/40 text-status-ready hover:bg-status-ready hover:text-canvas font-mono text-[11px] font-semibold transition-all duration-200"
                             title={`Copiar comando autónomo para ${activeCLI.command}`}
                         >
-                            <span>{activeCLI.icon}</span>
+                            <BrandIcon id={activeCLI.id} className="w-3.5 h-3.5 shrink-0" />
                             <span>{activeCLI.command}</span>
                         </button>
                     )}

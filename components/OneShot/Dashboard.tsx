@@ -5,6 +5,8 @@ import { ArrowUpRight, Sparkles, FileText, Box } from 'lucide-react';
 import { formatNumber } from '../../utils/cn';
 import { findNodeById } from '../../utils/tree-utils';
 
+import { BrandIcon } from '../ui/BrandIcons';
+
 export const Dashboard: React.FC = () => {
   const { state, dispatch } = useStore();
   
@@ -68,10 +70,10 @@ export const Dashboard: React.FC = () => {
                   {state.detectedCLIs.filter(c => c.isInstalled).map(cli => (
                     <span 
                       key={cli.id}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface/80 border border-stroke text-ink text-[11px] font-mono shadow-sm hover:border-status-ready/60 transition-colors cursor-default"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface/90 border border-stroke text-ink text-[11px] font-mono shadow-sm hover:border-status-ready/60 transition-colors cursor-default"
                       title={`Ubicación: ${cli.path}`}
                     >
-                      <span>{cli.icon}</span>
+                      <BrandIcon id={cli.id} className="w-3.5 h-3.5 text-status-ready shrink-0" />
                       <span className="font-semibold text-status-ready">{cli.command}</span>
                     </span>
                   ))}
