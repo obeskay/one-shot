@@ -8,6 +8,15 @@ export type ErrorDTO = {
   details?: unknown;
 };
 
+export type AgentCLIDTO = {
+  id: string;
+  name: string;
+  command: string;
+  path: string;
+  isInstalled: boolean;
+  icon: string;
+};
+
 // ---------------------------------------------------------------------------
 // Project / Tree
 // ---------------------------------------------------------------------------

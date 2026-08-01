@@ -31,6 +31,7 @@ declare global {
           StreamPrompt(spec: PromptRunSpecDTO): Promise<string>; // Retorna jobId
           StopStream(jobId: string): Promise<void>;
           GetProviders(): Promise<import('../types/domain').ProviderDTO[]>;
+          DetectInstalledCLIs(): Promise<import('../types/domain').AgentCLIDTO[]>;
         };
       };
     };
@@ -199,6 +200,16 @@ const MockBridge = {
         ]
       }
     ] as any;
+  },
+
+  async DetectInstalledCLIs(): Promise<import('../types/domain').AgentCLIDTO[]> {
+    return [
+      { id: 'agy', name: 'Antigravity CLI', command: 'agy -p', path: '/opt/homebrew/bin/agy', isInstalled: true, icon: '🚀' },
+      { id: 'claude', name: 'Claude Code CLI', command: 'claude -p', path: '/Users/ov/.local/bin/claude', isInstalled: true, icon: '🧠' },
+      { id: 'codex', name: 'OpenAI Codex CLI', command: 'codex -p', path: '/opt/homebrew/bin/codex', isInstalled: true, icon: '🤖' },
+      { id: 'gh', name: 'GitHub Copilot CLI', command: 'gh copilot', path: '/opt/homebrew/bin/gh', isInstalled: true, icon: '🐙' },
+      { id: 'ollama', name: 'Ollama Local CLI', command: 'ollama run', path: '/opt/homebrew/bin/ollama', isInstalled: true, icon: '🦙' },
+    ];
   },
 };
 
@@ -426,6 +437,10 @@ const WailsBridge = {
 
   async GetProviders(): Promise<import('../types/domain').ProviderDTO[]> {
     return await window.go.app.App.GetProviders();
+  },
+
+  async DetectInstalledCLIs(): Promise<import('../types/domain').AgentCLIDTO[]> {
+    return await window.go.app.App.DetectInstalledCLIs();
   },
 };
 

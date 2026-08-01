@@ -35,6 +35,16 @@ type ErrorDTO struct {
 	Details any    `json:"details,omitempty"`
 }
 
+// AgentCLIDTO representa una CLI de agente autónomo instalada en la máquina
+type AgentCLIDTO struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Command     string `json:"command"`
+	Path        string `json:"path"`
+	IsInstalled bool   `json:"isInstalled"`
+	Icon        string `json:"icon"`
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // Project / Tree DTOs
 // ══════════════════════════════════════════════════════════════════════════════

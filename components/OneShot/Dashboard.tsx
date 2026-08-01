@@ -53,9 +53,31 @@ export const Dashboard: React.FC = () => {
               one<span className="text-status-ready">shot</span>
             </h1>
 
-            <p className="text-sm md:text-base text-ink-muted leading-relaxed font-normal mb-8 max-w-md">
+            <p className="text-sm md:text-base text-ink-muted leading-relaxed font-normal mb-6 max-w-md">
               Context engine for LLMs. Select your repository, pick key modules, and build deterministic context payloads.
             </p>
+
+            {/* Detected Installed Agent CLIs */}
+            {state.detectedCLIs.filter(c => c.isInstalled).length > 0 && (
+              <div className="mb-8 p-3 rounded-2xl bg-surface-elevated/40 border border-stroke-emphasis/50 backdrop-blur-xl flex flex-col items-center gap-2.5 w-full max-w-lg">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-ink-subtle flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-status-ready shadow-glow" />
+                  Agentes autónomos detectados en tu Mac
+                </span>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {state.detectedCLIs.filter(c => c.isInstalled).map(cli => (
+                    <span 
+                      key={cli.id}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface/80 border border-stroke text-ink text-[11px] font-mono shadow-sm hover:border-status-ready/60 transition-colors cursor-default"
+                      title={`Ubicación: ${cli.path}`}
+                    >
+                      <span>{cli.icon}</span>
+                      <span className="font-semibold text-status-ready">{cli.command}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Action Button */}
             <button

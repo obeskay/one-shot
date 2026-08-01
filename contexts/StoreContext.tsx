@@ -26,6 +26,8 @@ const initialState: AppState = {
   budgetTokens: 50000,
   currentJobId: null,
   providers: [],
+  detectedCLIs: [],
+  selectedCLIId: undefined,
 };
 
 type Action =
@@ -49,7 +51,9 @@ type Action =
   | { type: 'SET_BUDGET'; payload: number }
   | { type: 'SET_CURRENT_JOB'; payload: string | null }
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_PROVIDERS'; payload: any[] };
+  | { type: 'SET_PROVIDERS'; payload: any[] }
+  | { type: 'SET_DETECTED_CLIS'; payload: any[] }
+  | { type: 'SELECT_CLI'; payload: string };
 
 function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
@@ -123,6 +127,14 @@ function reducer(state: AppState, action: Action): AppState {
             return { ...state, isLoading: action.payload };
         case 'SET_PROVIDERS':
             return { ...state, providers: action.payload };
+        case 'SET_DETECTED_CLIS':
+            return { 
+                ...state, 
+                detectedCLIs: action.payload,
+                selectedCLIId: action.payload.find((c: any) => c.isInstalled)?.id || state.selectedCLIId
+            };
+        case 'SELECT_CLI':
+            return { ...state, selectedCLIId: action.payload };
         default:
             return state;
     }
@@ -151,6 +163,10 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }));
       dispatch({ type: 'SET_PROVIDERS', payload: mappedProviders });
     }).catch(err => console.error("Failed to fetch providers", err));
+
+    Bridge.DetectInstalledCLIs().then(clis => {
+      dispatch({ type: 'SET_DETECTED_CLIS', payload: clis });
+    }).catch(err => console.error("Failed to detect CLIs", err));
   }, []);
 
   return <StoreContext.Provider value={{ state, dispatch }}>{children}</StoreContext.Provider>;

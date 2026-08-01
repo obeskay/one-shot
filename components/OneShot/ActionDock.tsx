@@ -42,6 +42,23 @@ export const ActionDock: React.FC = () => {
         }
     };
 
+    const activeCLI = state.detectedCLIs.find(c => c.isInstalled);
+
+    const handleCopyCLICommand = async () => {
+        setIsCopying(true);
+        try {
+            const payload = await buildPayload();
+            const cliCmd = activeCLI ? activeCLI.command : 'agy -p';
+            const fullCommand = `${cliCmd} ${JSON.stringify(payload.trim())}`;
+            await copyToClipboard(fullCommand);
+            addToast('success', `Comando para ${cliCmd} copiado al portapapeles`);
+        } catch (e) {
+            addToast('error', 'Error al generar comando CLI');
+        } finally {
+            setTimeout(() => setIsCopying(false), 1000);
+        }
+    };
+
     return (
         <>
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
@@ -59,7 +76,7 @@ export const ActionDock: React.FC = () => {
 
                     <div className="w-px h-5 bg-stroke mx-1" />
 
-                    {/* Copy button */}
+                    {/* Copy Raw Context button */}
                     <Button
                         variant="primary"
                         shape="pill"
@@ -75,6 +92,18 @@ export const ActionDock: React.FC = () => {
                             <span className="ml-2 opacity-60 text-micro">{count}</span>
                         )}
                     </Button>
+
+                    {/* Copy CLI Autonomous Command button */}
+                    {activeCLI && (
+                        <button
+                            onClick={handleCopyCLICommand}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-status-ready/15 border border-status-ready/40 text-status-ready hover:bg-status-ready hover:text-canvas font-mono text-[11px] font-semibold transition-all duration-200"
+                            title={`Copiar comando autónomo para ${activeCLI.command}`}
+                        >
+                            <span>{activeCLI.icon}</span>
+                            <span>{activeCLI.command}</span>
+                        </button>
+                    )}
 
                     <div className="w-px h-5 bg-stroke mx-1" />
 

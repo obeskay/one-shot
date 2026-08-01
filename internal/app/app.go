@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	goruntime "runtime"
+	"strings"
 
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 
@@ -320,3 +321,67 @@ func (a *App) StreamPrompt(spec domain.PromptRunSpecDTO) (string, error) {
 func (a *App) StopStream(jobId string) error {
 	return a.CancelJob(jobId)
 }
+
+// DetectInstalledCLIs escanea el sistema en busca de CLIs de agentes instalados
+func (a *App) DetectInstalledCLIs() []domain.AgentCLIDTO {
+	knownCLIs := []struct {
+		ID    string
+		Name  string
+		Cmd   string
+		Icon  string
+		Flags string
+	}{
+		{ID: "agy", Name: "Antigravity CLI", Cmd: "agy", Icon: "🚀", Flags: "-p"},
+		{ID: "claude", Name: "Claude Code CLI", Cmd: "claude", Icon: "🧠", Flags: "-p"},
+		{ID: "ccai", Name: "Claude Code AI", Cmd: "ccai", Icon: "⚡", Flags: "-p"},
+		{ID: "codex", Name: "OpenAI Codex CLI", Cmd: "codex", Icon: "🤖", Flags: "-p"},
+		{ID: "gh", Name: "GitHub Copilot CLI", Cmd: "gh", Icon: "🐙", Flags: "copilot"},
+		{ID: "ollama", Name: "Ollama Local CLI", Cmd: "ollama", Icon: "🦙", Flags: "run"},
+	}
+
+	pathEnv := os.Getenv("PATH")
+	homeDir, _ := os.UserHomeDir()
+
+	extraPaths := []string{
+		"/opt/homebrew/bin",
+		"/usr/local/bin",
+		filepath.Join(homeDir, ".local", "bin"),
+		filepath.Join(homeDir, "go", "bin"),
+	}
+
+	for _, p := range extraPaths {
+		if p != "" && !strings.Contains(pathEnv, p) {
+			pathEnv = p + string(os.PathListSeparator) + pathEnv
+		}
+	}
+
+	var results []domain.AgentCLIDTO
+
+	for _, item := range knownCLIs {
+		foundPath := ""
+		for _, dir := range filepath.SplitList(pathEnv) {
+			target := filepath.Join(dir, item.Cmd)
+			if info, err := os.Stat(target); err == nil && !info.IsDir() {
+				foundPath = target
+				break
+			}
+		}
+
+		fullCommand := item.Cmd
+		if item.Flags != "" {
+			fullCommand = fmt.Sprintf("%s %s", item.Cmd, item.Flags)
+		}
+
+		results = append(results, domain.AgentCLIDTO{
+			ID:          item.ID,
+			Name:        item.Name,
+			Command:     fullCommand,
+			Path:        foundPath,
+			IsInstalled: foundPath != "",
+			Icon:        item.Icon,
+		})
+	}
+
+	return results
+}
+

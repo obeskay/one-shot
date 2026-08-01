@@ -75,6 +75,15 @@ export interface ChatMessage {
   isError?: boolean;
 }
 
+export interface AgentCLIDTO {
+  id: string;
+  name: string;
+  command: string;
+  path: string;
+  isInstalled: boolean;
+  icon: string;
+}
+
 // UI State
 export interface AppState {
   projectPath: string | null;
@@ -109,6 +118,8 @@ export interface AppState {
 
   // Dynamic Data
   providers: ProviderConfig[];
+  detectedCLIs: AgentCLIDTO[];
+  selectedCLIId?: string;
 
   // Job tracking
   currentJobId: string | null;
