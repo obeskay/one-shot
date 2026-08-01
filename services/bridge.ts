@@ -155,10 +155,49 @@ const MockBridge = {
   },
 
   async GetProviders(): Promise<import('../types/domain').ProviderDTO[]> {
-    console.warn('[Bridge] Modo mock: GetProviders');
     return [
-      { id: 'openai', name: 'OpenAI (Mock)', models: [], icon: '🤖' },
-      { id: 'anthropic', name: 'Anthropic (Mock)', models: [], icon: '🧠' }
+      {
+        id: 'openai',
+        name: 'OpenAI',
+        icon: '🤖',
+        baseUrl: 'https://api.openai.com/v1',
+        models: [
+          { id: 'gpt-4o', name: 'GPT-4o', capabilities: { canThink: false, canSearch: true } },
+          { id: 'gpt-4o-mini', name: 'GPT-4o Mini', capabilities: { canThink: false, canSearch: false } },
+          { id: 'o1', name: 'o1 Reasoning', capabilities: { canThink: true, canSearch: false } },
+          { id: 'o3-mini', name: 'o3-Mini', capabilities: { canThink: true, canSearch: false } }
+        ]
+      },
+      {
+        id: 'anthropic',
+        name: 'Anthropic',
+        icon: '🧠',
+        baseUrl: 'https://api.anthropic.com/v1',
+        models: [
+          { id: 'claude-3-7-sonnet', name: 'Claude 3.7 Sonnet', capabilities: { canThink: true, canSearch: false } },
+          { id: 'claude-3-5-haiku', name: 'Claude 3.5 Haiku', capabilities: { canThink: false, canSearch: false } }
+        ]
+      },
+      {
+        id: 'gemini',
+        name: 'Google Gemini',
+        icon: '✨',
+        baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+        models: [
+          { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', capabilities: { canThink: true, canSearch: true } },
+          { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', capabilities: { canThink: true, canSearch: true } }
+        ]
+      },
+      {
+        id: 'deepseek',
+        name: 'DeepSeek / Groq',
+        icon: '⚡',
+        baseUrl: 'https://api.deepseek.com/v1',
+        models: [
+          { id: 'deepseek-chat', name: 'DeepSeek V3', capabilities: { canThink: false, canSearch: false } },
+          { id: 'deepseek-reasoner', name: 'DeepSeek R1', capabilities: { canThink: true, canSearch: false } }
+        ]
+      }
     ] as any;
   },
 };
