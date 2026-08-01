@@ -5,7 +5,7 @@ interface IconProps {
   size?: number;
 }
 
-export const AntigravityIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size }) => (
+export const AntigravityIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size = 16 }) => (
   <svg 
     width={size} 
     height={size} 
@@ -22,7 +22,7 @@ export const AntigravityIcon: React.FC<IconProps> = ({ className = "w-4 h-4", si
   </svg>
 );
 
-export const ClaudeIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size }) => (
+export const ClaudeIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size = 16 }) => (
   <svg 
     width={size} 
     height={size} 
@@ -30,11 +30,23 @@ export const ClaudeIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size })
     fill="currentColor" 
     className={className}
   >
-    <path d="M17.472 17.472H21.5L13.91 3.5H10.09L2.5 17.472h4.028l1.458-2.69h8.028l1.458 2.69zm-7.61-4.708l2.638-4.868 2.638 4.868h-5.276z"/>
+    <path d="M13.827 3.525h3.633L24 20.475h-3.633l-1.89-4.364H11.08l-1.89 4.364H5.557L13.827 3.525zm3.176 9.615L15.64 9.006l-1.363 4.134h2.726zM0 20.475l5.06-11.64 2.27 5.22L4.09 20.475H0z"/>
   </svg>
 );
 
-export const OpenAIIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size }) => (
+export const AnthropicIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size = 16 }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    className={className}
+  >
+    <path d="M13.827 3.525h3.633L24 20.475h-3.633l-1.89-4.364H11.08l-1.89 4.364H5.557L13.827 3.525zm3.176 9.615L15.64 9.006l-1.363 4.134h2.726zM0 20.475l5.06-11.64 2.27 5.22L4.09 20.475H0z"/>
+  </svg>
+);
+
+export const OpenAIIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size = 16 }) => (
   <svg 
     width={size} 
     height={size} 
@@ -46,7 +58,7 @@ export const OpenAIIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size })
   </svg>
 );
 
-export const GeminiIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size }) => (
+export const GeminiIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size = 16 }) => (
   <svg 
     width={size} 
     height={size} 
@@ -58,7 +70,7 @@ export const GeminiIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size })
   </svg>
 );
 
-export const GitHubIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size }) => (
+export const GitHubIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size = 16 }) => (
   <svg 
     width={size} 
     height={size} 
@@ -70,7 +82,7 @@ export const GitHubIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size })
   </svg>
 );
 
-export const OllamaIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size }) => (
+export const OllamaIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size = 16 }) => (
   <svg 
     width={size} 
     height={size} 
@@ -90,7 +102,7 @@ export const BrandIcon: React.FC<{ id: string; className?: string; size?: number
     case 'claude':
     case 'ccai':
     case 'anthropic':
-      return <ClaudeIcon className={className} size={size} />;
+      return <AnthropicIcon className={className} size={size} />;
     case 'openai':
     case 'codex':
       return <OpenAIIcon className={className} size={size} />;
