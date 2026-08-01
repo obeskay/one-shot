@@ -22,6 +22,23 @@ export const AntigravityIcon: React.FC<IconProps> = ({ className = "w-4 h-4", si
   </svg>
 );
 
+// Iconic 8-ray Claude Sparkle/Starburst
+export const ClaudeIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size = 16 }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2.2" 
+    strokeLinecap="round"
+    className={className}
+  >
+    <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93" />
+  </svg>
+);
+
+// Official Anthropic /\A Corporate Logo
 export const AnthropicIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size = 16 }) => (
   <svg 
     width={size} 
@@ -34,6 +51,7 @@ export const AnthropicIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size
   </svg>
 );
 
+// Canonical OpenAI Spiral Logo
 export const OpenAIIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size = 16 }) => (
   <svg 
     width={size} 
@@ -42,7 +60,7 @@ export const OpenAIIcon: React.FC<IconProps> = ({ className = "w-4 h-4", size = 
     fill="currentColor" 
     className={className}
   >
-    <path d="M22.28 9.77a6 6 0 0 0-.52-5.1 6.05 6.05 0 0 0-6.8-2.73 6.06 6.06 0 0 0-4.66-2.07 6.06 6.06 0 0 0-5.74 4.14 6.06 6.06 0 0 0-4.14 2.87 6.05 6.05 0 0 0 .82 7.33 6.05 6.05 0 0 0 .52 5.1 6.05 6.05 0 0 0 6.8 2.73 6.06 6.06 0 0 0 4.66 2.07 6.06 6.06 0 0 0 5.74-4.14 6.06 6.06 0 0 0 4.14-2.87 6.05 6.05 0 0 0-.82-7.33zM12 2.37a4.26 4.26 0 0 1 3.2 1.44l-1.34 2.33a2.76 2.76 0 0 0-2.86-.33l-2.07-3.6a4.24 4.24 0 0 1 3.07-.16zM4.3 6.47a4.25 4.25 0 0 1 1.76-2.75l2.07 3.6a2.76 2.76 0 0 0 .58 2.81l-3.6 2.07a4.25 4.25 0 0 1-.81-5.73zm1.18 8.65a4.25 4.25 0 0 1-1.44-3.2l3.6-2.07a2.76 2.76 0 0 0 3.44 2.48v4.14a4.26 4.26 0 0 1-5.6-1.35zm9.52 6.51a4.26 4.26 0 0 1-3.2-1.44l1.34-2.33a2.76 2.76 0 0 0 2.86.33l2.07 3.6a4.25 4.25 0 0 1-3.07.16zm5.7-4.1a4.25 4.25 0 0 1-1.76 2.75l-2.07-3.6a2.76 2.76 0 0 0-.58-2.81l3.6-2.07a4.25 4.25 0 0 1 .81 5.73zm-1.18-8.65a4.25 4.25 0 0 1 1.44 3.2l-3.6 2.07a2.76 2.76 0 0 0-3.44-2.48V8.38a4.26 4.26 0 0 1 5.6 1.35z"/>
+    <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9013A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9013 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9014A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.206 5.9897 5.9897 0 0 0 3.9977-2.9013 6.0557 6.0557 0 0 0-.7475-7.0718zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.794.794 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.067l-4.831 2.791A4.5 4.5 0 0 1 3.6 18.304zm-1.543-9.52a4.48 4.48 0 0 1 2.34-1.972l.002.164v5.522a.784.784 0 0 0 .392.68l5.833 3.365-2.02 1.168a.078.078 0 0 1-.075.005L3.693 14.93A4.504 4.504 0 0 1 2.057 8.784zm14.197 3.565-5.834-3.37 2.02-1.164a.078.078 0 0 1 .075-.005l4.836 2.793a4.5 4.5 0 0 1-.692 8.125v-5.698a.79.79 0 0 0-.405-.681zm2.347-4.491-4.779-2.758a.774.774 0 0 0-.78 0L7.301 8.905V6.573a.078.078 0 0 1 .033-.067l4.831-2.79a4.503 4.503 0 0 1 6.685 4.707zm-10.45 2.505 2.51-1.45 2.51 1.45v2.9l-2.51 1.45-2.51-1.45z"/>
   </svg>
 );
 
@@ -89,6 +107,7 @@ export const BrandIcon: React.FC<{ id: string; className?: string; size?: number
       return <AntigravityIcon className={className} size={size} />;
     case 'claude':
     case 'ccai':
+      return <ClaudeIcon className={className} size={size} />;
     case 'anthropic':
       return <AnthropicIcon className={className} size={size} />;
     case 'openai':
