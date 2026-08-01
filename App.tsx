@@ -5,6 +5,12 @@ import { AppLayout } from './components/Layout/AppLayout';
 import { SetupWizard } from './components/features/Setup/SetupWizard';
 
 function AppContent() {
+  const { state } = useStore();
+
+  if (!state.aiConfig.isConfigured) {
+    return <SetupWizard />;
+  }
+
   return <AppLayout />;
 }
 
