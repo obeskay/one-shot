@@ -24,54 +24,61 @@ export const Dashboard: React.FC = () => {
   // ═══════════════════════════════════════════════════════════
   if (!state.projectPath) {
     return (
-      <div className="flex-1 flex flex-col h-full bg-canvas relative overflow-hidden">
-        {/* Animated Background Gradients */}
-        <div className="absolute top-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-status-ready/10 rounded-full blur-[120px] animate-pulse-glow" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-blue-500/5 rounded-full blur-[100px]" />
-        
-        <div className="flex-grow flex items-center justify-center">
-            <div className="relative animate-reveal">
-                <div className="absolute inset-0 bg-status-ready/20 blur-[60px] rounded-full scale-150 opacity-50" />
-                <div className="relative w-32 h-32 md:w-48 md:h-48 rounded-[2rem] bg-surface-elevated/50 border border-stroke-emphasis flex items-center justify-center shadow-elevated backdrop-blur-xl group hover:border-status-ready/40 transition-all duration-700">
-                    <Box size={56} className="text-status-ready group-hover:scale-110 transition-transform duration-700" strokeWidth={1.5} />
-                </div>
-            </div>
-        </div>
+      <div className="min-h-screen w-full flex flex-col justify-between bg-canvas relative overflow-hidden select-none">
+        {/* Ambient Glow Effects */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-status-ready/15 rounded-full blur-[140px] pointer-events-none animate-pulse-glow" />
+        <div className="absolute bottom-10 right-10 w-[350px] h-[350px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="flex flex-col md:flex-row justify-between items-end w-full px-8 md:px-16 pb-8 md:pb-16 border-b border-stroke/50 z-10">
-          <div className="animate-reveal mb-8 md:mb-0 w-full md:w-auto">
-            <p className="text-sm font-medium leading-relaxed text-ink-muted lowercase max-w-[280px] tracking-tight mb-10 opacity-70">
-              The intelligent context engine for LLMs. Select your source, define your goal, build perfect prompts.
+        {/* Top Spacer for macOS Window Controls */}
+        <div className="h-12 w-full shrink-0" />
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 z-10 max-w-4xl mx-auto w-full text-center">
+          {/* Logo Card */}
+          <div className="relative mb-8 animate-reveal">
+            <div className="absolute inset-0 bg-status-ready/30 blur-[40px] rounded-3xl scale-125 opacity-60" />
+            <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-3xl bg-surface-elevated/80 border border-stroke-emphasis flex items-center justify-center shadow-glow backdrop-blur-2xl group hover:border-status-ready/60 hover:scale-105 transition-all duration-500">
+              <Box size={44} className="text-status-ready group-hover:rotate-6 transition-transform duration-500" strokeWidth={1.5} />
+            </div>
+          </div>
+
+          {/* Main Title & Description */}
+          <div className="animate-reveal delay-100 flex flex-col items-center max-w-xl">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-status-ready/10 border border-status-ready/30 text-status-ready text-[11px] font-mono tracking-widest uppercase mb-6">
+              <span className="w-2 h-2 rounded-full bg-status-ready shadow-glow animate-pulse" />
+              Engine v0.1.0 Ready
+            </span>
+
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-ink lowercase mb-4 leading-none">
+              one<span className="text-status-ready">shot</span>
+            </h1>
+
+            <p className="text-sm md:text-base text-ink-muted leading-relaxed font-normal mb-8 max-w-md">
+              Context engine for LLMs. Select your repository, pick key modules, and build deterministic context payloads.
             </p>
+
+            {/* Action Button */}
             <button
               onClick={handleOpenProject}
               disabled={state.isLoading}
-              className="group flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-ink hover:text-status-ready transition-all duration-500"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-status-ready text-canvas font-semibold text-xs tracking-widest uppercase shadow-glow hover:bg-status-active hover:shadow-glow-active hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50"
             >
-              <div className="w-8 h-8 rounded-full border border-stroke flex items-center justify-center group-hover:border-status-ready group-hover:bg-status-ready/5 transition-all duration-500">
-                <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </div>
-              {state.isLoading ? 'Cargando...' : 'Abrir repositorio'}
+              <span>{state.isLoading ? 'Cargando repositorio...' : 'Abrir Repositorio'}</span>
+              <ArrowUpRight size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </button>
           </div>
-          <div className="text-left md:text-right animate-reveal delay-100">
-            <h1 className="text-[12vw] md:text-[8vw] leading-[0.8] font-bold text-ink tracking-tighter lowercase select-none">
-                One<br /><span className="text-status-ready">Shot</span>
-            </h1>
-          </div>
         </div>
-        
-        <div className="w-full px-8 md:px-16 py-8 flex justify-between items-center animate-reveal delay-200 bg-surface/20 backdrop-blur-sm">
-          <div className="flex gap-8">
-            <span className="text-[10px] font-mono uppercase tracking-[0.2em] flex items-center gap-2 text-ink-subtle">
-              <span className="w-1.5 h-1.5 bg-status-ready rounded-full shadow-glow" />
-              Engine v0.1.0 Ready
-            </span>
+
+        {/* Footer Status Bar */}
+        <footer className="w-full px-8 py-5 border-t border-stroke/60 bg-surface/30 backdrop-blur-md flex justify-between items-center z-10 shrink-0 text-[11px] font-mono text-ink-subtle">
+          <div className="flex items-center gap-3">
+            <span className="w-2 h-2 bg-status-ready rounded-full shadow-glow" />
+            <span>Local Codebase Explorer</span>
           </div>
-          <div className="text-[10px] font-mono text-ink-subtle uppercase tracking-[0.2em] opacity-40">
-            Awaiting input
+          <div className="uppercase tracking-widest opacity-60">
+            Awaiting Repository Selection
           </div>
-        </div>
+        </footer>
       </div>
     );
   }
