@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="build/appicon.png" width="128" alt="One-Shot" />
+</div>
+
 # One-Shot
 
 **Copia tu codebase completo, con grafo de dependencias, listo para pegar en cualquier chatbot.**
