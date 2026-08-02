@@ -1,34 +1,72 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../contexts/StoreContext';
 import { useToast } from '../contexts/ToastContext';
 import { Bridge } from '../services/bridge';
 import { findNodeById } from '../utils/tree-utils';
 import { estimateTokens } from '../utils/cn';
 import { PayloadResult } from '../types';
+import { loadSession } from '../services/session';
+import { isLikelyBinary } from '../utils/binary-ext';
 
 export const usePayload = () => {
     const { state, dispatch } = useStore();
     const { addToast } = useToast();
     const [isCopying, setIsCopying] = useState(false);
+    const [isExpanding, setIsExpanding] = useState(false);
+    const restored = useRef(false);
+
+    // Al arrancar, reabrimos el ultimo proyecto y su seleccion
+    useEffect(() => {
+        if (restored.current) return;
+        restored.current = true;
+
+        const session = loadSession();
+        if (!session) return;
+
+        dispatch({ type: 'SET_LOADING', payload: true });
+        Bridge.ScanProject(session.projectPath)
+            .then(tree => {
+                dispatch({
+                    type: 'RESTORE_SESSION',
+                    payload: {
+                        path: session.projectPath,
+                        tree,
+                        selectedFileIds: session.selectedFileIds,
+                        options: session.options,
+                    },
+                });
+            })
+            .catch(() => {
+                // El proyecto se movio o se borro: arrancamos limpio
+                dispatch({ type: 'SET_LOADING', payload: false });
+            });
+    }, [dispatch]);
 
     const selectedFiles = useMemo(
         () => Array.from(state.selectedFileIds).sort(),
         [state.selectedFileIds]
     );
 
-    // Estimacion barata mientras el usuario selecciona (sin leer archivos)
+    // Estimacion barata mientras el usuario selecciona (sin leer archivos).
+    // Los binarios no aportan tokens: solo se listan con su ruta.
     const estimate = useMemo(() => {
-        if (!state.tree?.root) return { bytes: 0, tokens: 0, files: 0 };
+        if (!state.tree?.root) return { bytes: 0, tokens: 0, files: 0, binary: 0 };
         let bytes = 0;
         let files = 0;
+        let binary = 0;
+
         for (const id of selectedFiles) {
             const node = findNodeById(state.tree.root, id);
-            if (node && !node.isDir) {
-                bytes += node.size;
-                files++;
+            if (!node || node.isDir) continue;
+
+            if (isLikelyBinary(id)) {
+                binary++;
+                continue;
             }
+            bytes += node.size;
+            files++;
         }
-        return { bytes, tokens: estimateTokens(bytes), files };
+        return { bytes, tokens: estimateTokens(bytes), files, binary };
     }, [selectedFiles, state.tree]);
 
     const openProject = useCallback(async () => {
@@ -46,6 +84,33 @@ export const usePayload = () => {
             dispatch({ type: 'SET_LOADING', payload: false });
         }
     }, [dispatch, addToast]);
+
+    // Agrega a la seleccion todo lo que los archivos elegidos importan
+    const expandByGraph = useCallback(async (depth = 0) => {
+        if (!state.projectPath || selectedFiles.length === 0) {
+            addToast('error', 'Selecciona al menos un archivo');
+            return;
+        }
+
+        setIsExpanding(true);
+        try {
+            const expanded = await Bridge.ExpandSelection(state.projectPath, selectedFiles, depth);
+            const added = expanded.length - selectedFiles.length;
+
+            if (added <= 0) {
+                addToast('info', 'La seleccion ya incluye todas sus dependencias');
+                return;
+            }
+
+            dispatch({ type: 'SELECT_BATCH', payload: { ids: expanded, selected: true } });
+            addToast('success', `+${added} archivos que tu seleccion importa`);
+        } catch (err) {
+            console.error(err);
+            addToast('error', 'No se pudo expandir por el grafo');
+        } finally {
+            setIsExpanding(false);
+        }
+    }, [state.projectPath, selectedFiles, dispatch, addToast]);
 
     // Arma el payload en Go y lo deja en el store
     const build = useCallback(async (): Promise<PayloadResult | null> => {
@@ -105,6 +170,8 @@ export const usePayload = () => {
         selectedFiles,
         estimate,
         isCopying,
+        isExpanding,
+        expandByGraph,
         openProject,
         build,
         copy,

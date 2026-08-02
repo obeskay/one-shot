@@ -357,3 +357,45 @@ func (g *Graph) TopExternal(limit int) []string {
 	}
 	return out
 }
+
+// Closure devuelve las semillas mas todo lo que alcanzan siguiendo imports.
+// depth <= 0 significa cierre transitivo completo.
+func (g *Graph) Closure(seeds []string, depth int) []string {
+	edges := make(map[string][]string, len(g.Files))
+	for _, n := range g.Files {
+		edges[n.RelPath] = n.Imports
+	}
+
+	visited := make(map[string]bool, len(seeds))
+	frontier := make([]string, 0, len(seeds))
+	for _, s := range seeds {
+		if !visited[s] {
+			visited[s] = true
+			frontier = append(frontier, s)
+		}
+	}
+
+	for level := 0; len(frontier) > 0; level++ {
+		if depth > 0 && level >= depth {
+			break
+		}
+
+		next := make([]string, 0)
+		for _, cur := range frontier {
+			for _, dep := range edges[cur] {
+				if !visited[dep] {
+					visited[dep] = true
+					next = append(next, dep)
+				}
+			}
+		}
+		frontier = next
+	}
+
+	out := make([]string, 0, len(visited))
+	for rel := range visited {
+		out = append(out, rel)
+	}
+	sort.Strings(out)
+	return out
+}

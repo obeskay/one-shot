@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { AppState, TreeSnapshot, PayloadOptions, PayloadResult } from '../types';
 import { DEFAULT_PAYLOAD_OPTIONS } from '../constants';
+import { loadSession, saveSession } from '../services/session';
 
 const initialState: AppState = {
   projectPath: null,
@@ -27,7 +28,8 @@ type Action =
   | { type: 'SET_OPTIONS'; payload: Partial<PayloadOptions> }
   | { type: 'SET_PAYLOAD'; payload: PayloadResult | null }
   | { type: 'SET_BUILDING'; payload: boolean }
-  | { type: 'SET_LOADING'; payload: boolean };
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'RESTORE_SESSION'; payload: { path: string; tree: TreeSnapshot; selectedFileIds: string[]; options: PayloadOptions } };
 
 // Cualquier cambio de seleccion u opciones invalida el payload ya construido
 function invalidate(state: AppState): AppState {
@@ -44,6 +46,19 @@ function reducer(state: AppState, action: Action): AppState {
         selectedFileIds: new Set(),
         isLoading: false,
       };
+    case 'RESTORE_SESSION': {
+      // Solo recuperamos rutas que sigan existiendo en el arbol recien escaneado
+      const alive = new Set(collectFileIds(action.payload.tree.root));
+      return {
+        ...state,
+        projectPath: action.payload.path,
+        tree: action.payload.tree,
+        selectedFileIds: new Set(action.payload.selectedFileIds.filter(id => alive.has(id))),
+        options: action.payload.options,
+        payload: null,
+        isLoading: false,
+      };
+    }
     case 'TOGGLE_SELECT': {
       const next = new Set(state.selectedFileIds);
       if (next.has(action.payload)) next.delete(action.payload);
@@ -81,12 +96,32 @@ function reducer(state: AppState, action: Action): AppState {
   }
 }
 
+// collectFileIds junta las rutas de todos los archivos del arbol
+function collectFileIds(node: TreeSnapshot['root'], out: string[] = []): string[] {
+  if (!node.isDir) out.push(node.id);
+  node.children?.forEach(child => collectFileIds(child, out));
+  return out;
+}
+
 const StoreContext = createContext<{ state: AppState; dispatch: React.Dispatch<Action> } | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  // Guardamos la sesion en cuanto cambia algo que valga la pena recuperar
+  useEffect(() => {
+    if (!state.projectPath) return;
+    saveSession({
+      projectPath: state.projectPath,
+      selectedFileIds: Array.from(state.selectedFileIds),
+      options: state.options,
+    });
+  }, [state.projectPath, state.selectedFileIds, state.options]);
+
   return <StoreContext.Provider value={{ state, dispatch }}>{children}</StoreContext.Provider>;
 };
+
+export { loadSession };
 
 export const useStore = () => {
   const context = useContext(StoreContext);

@@ -61,3 +61,36 @@ func TestBuild_ResuelveIndexYExtensionesJS(t *testing.T) {
 		t.Errorf("imports sin resolver: %v (obtuve %v)", want, app.Imports)
 	}
 }
+
+func TestClosure_SigueDependenciasTransitivas(t *testing.T) {
+	contents := map[string]string{
+		"a.ts": "import './b';\n",
+		"b.ts": "import './c';\n",
+		"c.ts": "export const c = 1;\n",
+		"z.ts": "export const z = 1;\n", // aislado
+	}
+
+	g := Build(contents)
+
+	full := g.Closure([]string{"a.ts"}, 0)
+	if len(full) != 3 {
+		t.Errorf("cierre completo esperaba a,b,c; obtuve %v", full)
+	}
+	for _, rel := range full {
+		if rel == "z.ts" {
+			t.Error("z.ts no es alcanzable desde a.ts")
+		}
+	}
+
+	unNivel := g.Closure([]string{"a.ts"}, 1)
+	if len(unNivel) != 2 {
+		t.Errorf("un nivel esperaba a,b; obtuve %v", unNivel)
+	}
+}
+
+func TestClosure_SinSemillasNoExplota(t *testing.T) {
+	g := Build(map[string]string{"a.ts": "export const a = 1;\n"})
+	if got := g.Closure(nil, 0); len(got) != 0 {
+		t.Errorf("esperaba vacio, obtuve %v", got)
+	}
+}

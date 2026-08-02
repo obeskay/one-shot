@@ -16,10 +16,11 @@ import (
 
 // App estructura principal de la aplicacion Wails
 type App struct {
-	ctx     context.Context
-	scanner *fs.Scanner
-	builder *payload.Builder
-	logger  *slog.Logger
+	ctx        context.Context
+	scanner    *fs.Scanner
+	builder    *payload.Builder
+	graphCache *projectGraph
+	logger     *slog.Logger
 }
 
 // New crea una nueva instancia de la aplicacion
@@ -29,8 +30,9 @@ func New() *App {
 	}))
 
 	return &App{
-		scanner: fs.NewScanner(),
-		logger:  logger,
+		scanner:    fs.NewScanner(),
+		graphCache: &projectGraph{},
+		logger:     logger,
 	}
 }
 
@@ -63,6 +65,7 @@ func (a *App) SelectProject() (string, error) {
 
 	if path != "" {
 		a.builder = payload.NewBuilder(path)
+		a.graphCache.invalidate()
 		a.logger.Info("Proyecto seleccionado", "path", path)
 	}
 
@@ -84,6 +87,7 @@ func (a *App) ScanProject(path string) (*domain.TreeSnapshotDTO, error) {
 	}
 
 	a.builder = payload.NewBuilder(path)
+	a.graphCache.invalidate()
 
 	opts := fs.DefaultScanOptions()
 	snapshot, err := a.scanner.Scan(path, opts)
@@ -108,6 +112,7 @@ func (a *App) ScanProjectWithOptions(path string, useGitignore bool, customIgnor
 	}
 
 	a.builder = payload.NewBuilder(path)
+	a.graphCache.invalidate()
 
 	opts := fs.ScanOptions{
 		UseGitignore:     useGitignore,

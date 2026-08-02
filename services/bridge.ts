@@ -13,6 +13,7 @@ declare global {
           ScanProjectWithOptions(path: string, useGitignore: boolean, customIgnore: string): Promise<TreeSnapshotDTO>;
           GetPlatform(): Promise<string>;
           BuildPayload(projectPath: string, relPaths: string[], opts: PayloadOptions): Promise<PayloadResult>;
+          ExpandSelection(projectPath: string, relPaths: string[], depth: number): Promise<string[]>;
           CopyToClipboard(text: string): Promise<void>;
           SavePayload(text: string, suggestedName: string): Promise<string>;
         };
@@ -105,6 +106,11 @@ const MockBridge = {
     };
   },
 
+  async ExpandSelection(_projectPath: string, relPaths: string[], _depth: number): Promise<string[]> {
+    console.warn('[Bridge] modo mock: ExpandSelection');
+    return relPaths;
+  },
+
   async CopyToClipboard(text: string): Promise<void> {
     await browserCopy(text);
   },
@@ -142,6 +148,11 @@ const WailsBridge = {
 
   async BuildPayload(projectPath: string, relPaths: string[], opts: PayloadOptions): Promise<PayloadResult> {
     return await window.go.app.App.BuildPayload(projectPath, relPaths, opts);
+  },
+
+  // Sigue los imports en Go y devuelve la seleccion ampliada
+  async ExpandSelection(projectPath: string, relPaths: string[], depth: number): Promise<string[]> {
+    return await window.go.app.App.ExpandSelection(projectPath, relPaths, depth);
   },
 
   // El copiado ocurre en Go: el webview falla con payloads grandes

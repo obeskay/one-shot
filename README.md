@@ -36,7 +36,20 @@ sea útil de verdad.
 3. Opcional: escribe el objetivo que quieres que el chatbot resuelva.
 4. **Copiar todo** (`⌘/Ctrl + Enter`) y pega en tu chat.
 
+### + Dependencias
+
+Marca el archivo que te importa y pulsa **+ Dependencias**: One-Shot recorre el grafo
+del proyecto completo y añade todo lo que ese archivo importa, transitivamente. Es la
+forma rápida de armar un contexto que se sostiene solo, sin cazar imports a mano.
+
+### Sesión
+
+Al cerrar y volver a abrir recuperas el último proyecto, la selección y las opciones.
+Las rutas que ya no existan se descartan al reescanear.
+
 Botones extra: `Vista previa` para ver el resultado antes de copiar, `Guardar .md` para dejarlo en disco.
+El contador de tokens se pone en rojo arriba de 200k, donde la mayoría de los chats
+rechazan un pegado de una sola vez.
 
 ## Opciones
 

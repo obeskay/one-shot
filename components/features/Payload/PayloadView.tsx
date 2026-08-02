@@ -5,11 +5,14 @@ import { openExternal } from '../../../services/bridge';
 import { PASTE_TARGETS } from '../../../constants';
 import { Button } from '../../ui/Button';
 import { Switch } from '../../ui/Switch';
-import { Copy, Check, Download, RefreshCw, Layers, ExternalLink } from 'lucide-react';
+import { Copy, Check, Download, RefreshCw, Layers, ExternalLink, GitBranch, AlertTriangle } from 'lucide-react';
 import { cn, formatBytes, formatNumber } from '../../../utils/cn';
 
 // Cuanto texto mostramos en la vista previa (el payload completo puede ser enorme)
 const PREVIEW_LIMIT = 20000;
+
+// Arriba de esto casi ningun chat acepta el pegado de una sola vez
+const HUGE_TOKENS = 200000;
 
 export const PayloadView: React.FC = () => {
     const {
@@ -18,6 +21,8 @@ export const PayloadView: React.FC = () => {
         selectedFiles,
         estimate,
         isCopying,
+        isExpanding,
+        expandByGraph,
         build,
         copy,
         save,
@@ -27,6 +32,9 @@ export const PayloadView: React.FC = () => {
     const hasSelection = selectedFiles.length > 0;
 
     useKeyboardShortcuts({ onCopy: copy });
+
+    const tokens = payload?.stats.tokens ?? estimate.tokens;
+    const isHuge = tokens > HUGE_TOKENS;
 
     const preview = payload
         ? payload.text.slice(0, PREVIEW_LIMIT)
@@ -49,15 +57,19 @@ export const PayloadView: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-4 text-[10px] font-mono text-ink-subtle shrink-0">
-                    <span>{selectedFiles.length} archivos</span>
-                    {!!payload?.stats.binary && (
+                    <span>{payload?.stats.files ?? estimate.files} archivos</span>
+                    {!!(payload?.stats.binary ?? estimate.binary) && (
                         <span title="Imagenes y binarios: se listan, no se copia su contenido">
-                            {payload.stats.binary} binarios
+                            {payload?.stats.binary ?? estimate.binary} binarios
                         </span>
                     )}
                     <span>{formatBytes(payload?.stats.bytes ?? estimate.bytes)}</span>
-                    <span className="text-status-ready">
-                        ~{formatNumber(payload?.stats.tokens ?? estimate.tokens)} tokens
+                    <span
+                        className={cn('flex items-center gap-1', isHuge ? 'text-status-error' : 'text-status-ready')}
+                        title={isHuge ? 'Muchos chats rechazan un pegado de este tamano: apaga "Codigo" o reduce la seleccion' : undefined}
+                    >
+                        {isHuge && <AlertTriangle size={11} />}
+                        ~{formatNumber(tokens)} tokens
                     </span>
                 </div>
             </header>
@@ -135,6 +147,16 @@ export const PayloadView: React.FC = () => {
                     >
                         <RefreshCw size={13} className={cn(isBuilding && 'animate-spin')} />
                         <span>{payload ? 'Regenerar' : 'Vista previa'}</span>
+                    </button>
+
+                    <button
+                        onClick={() => expandByGraph(0)}
+                        disabled={!hasSelection || isExpanding}
+                        className="flex items-center gap-1.5 px-3 h-9 rounded-lg border border-stroke text-[11px] text-ink-muted hover:text-ink hover:border-stroke-emphasis hover:bg-surface transition-all disabled:opacity-40"
+                        title="Agrega los archivos que tu seleccion importa, siguiendo el grafo"
+                    >
+                        <GitBranch size={13} className={cn(isExpanding && 'animate-pulse')} />
+                        <span>+ Dependencias</span>
                     </button>
 
                     <button
