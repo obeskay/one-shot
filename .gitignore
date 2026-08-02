@@ -13,7 +13,9 @@ node_modules/
 # Build outputs
 dist/
 dist-ssr/
-build/
+build/bin/
+
+# El resto de build/ son fuentes del proyecto (icono, Info.plist): se versionan
 
 # Wails
 wailsjs/
