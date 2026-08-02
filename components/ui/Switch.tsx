@@ -35,7 +35,7 @@ export const Switch: React.FC<SwitchProps> = ({
           disabled
             ? "border-stroke bg-transparent"
             : checked
-              ? "bg-ink border-ink"
+              ? "bg-status-ready border-status-ready"
               : "bg-transparent border-stroke group-hover:border-stroke-emphasis"
         )}></div>
         <div className={cn(
@@ -43,7 +43,7 @@ export const Switch: React.FC<SwitchProps> = ({
           disabled
             ? "bg-ink-muted"
             : checked
-              ? "transform translate-x-4 bg-ink-inverted"
+              ? "transform translate-x-4 bg-canvas"
               : "bg-ink-subtle"
         )}></div>
       </div>

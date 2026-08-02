@@ -78,12 +78,13 @@ export default {
             },
 
             // === BORDER RADIUS ===
+            // beskay: esquinas rectas. Solo el pill conserva curvatura.
             borderRadius: {
-                'subtle': '4px',
-                'base': '8px',
-                'medium': '12px',
-                'large': '16px',
-                'xl': '24px',
+                'subtle': '0px',
+                'base': '0px',
+                'medium': '0px',
+                'large': '0px',
+                'xl': '0px',
                 'pill': '9999px',
             },
 

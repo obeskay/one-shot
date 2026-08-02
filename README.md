@@ -4,7 +4,9 @@
 
 # One-Shot
 
-**Copia tu codebase completo, con grafo de dependencias, listo para pegar en cualquier chatbot.**
+**Lightning-fast desktop context builder for LLMs — Wails, Go y React.**
+
+Copia tu codebase completo, con grafo de dependencias, listo para pegar en cualquier chatbot.
 
 One-Shot escanea tu repositorio, te deja marcar los archivos que importan y arma **un solo mensaje** con la estructura del proyecto, el grafo de imports y el código. Lo copias al portapapeles y lo pegas en ChatGPT, Claude, Kimi o donde sea.
 
@@ -92,6 +94,38 @@ payloads de cientos de miles de caracteres.
 go test ./internal/...
 npm run typecheck
 ```
+
+## Por que quedo asi de simple
+
+Este repo nacio como un constructor de contexto y, commit a commit, se le fueron
+injertando proveedores de IA: OpenAI, Anthropic, Gemini, un chat con streaming, un
+wizard de API keys, deteccion de CLIs de agentes instalados. La app termino
+lanzando `provider not registered: agy` en la cara del usuario — un id de proveedor
+que la UI ofrecia y el backend nunca habia registrado. Mientras tanto el boton de
+copiar, que era el producto entero, estaba en un componente que ni siquiera se
+montaba en el layout.
+
+La correccion no fue arreglar el registro de proveedores. Fue borrarlos: `internal/llm`,
+`internal/secrets`, `internal/jobs`, el wizard, el chat. Menos 24 mil lineas.
+
+La leccion es de arquitectura, no de estilo. Una herramienta con **una sola
+responsabilidad** — aqui: convertir una seleccion de archivos en un bloque de texto —
+tiene una superficie donde el error es imposible de esconder. Si copia mal, lo ves
+en el portapapeles. Cuando esa misma herramienta ademas habla con cuatro APIs,
+guarda llaves en el keyring, mantiene un chat con streaming y detecta binarios en tu
+PATH, el fallo aparece a tres saltos de donde lo causaste.
+
+Vale la pena decirlo en terminos de como se trabaja hoy con agentes: **maquinitas
+aisladas**, cada una con un contrato chico y verificable, encadenadas por el humano.
+No un organismo que lo hace todo y en el que la IA tiene que salir a *descubrir* que
+esta roto. Una maquinita que copia bien es un **checkpoint**: entra una seleccion,
+sale un texto, lo pegas donde quieras y ese pegado o funciona o no. Lo que sigue —
+el modelo, el prompt, la conversacion — es problema de otra maquinita, la que ya
+existe y se llama ChatGPT, Claude o Kimi.
+
+Por eso One-Shot no tiene proveedores de IA. No es minimalismo estetico: es que el
+limite de la herramienta sea el mismo limite donde puedes verificar que hizo su
+trabajo.
 
 ## Licencia
 

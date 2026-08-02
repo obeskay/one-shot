@@ -1,49 +1,66 @@
 @import "tailwindcss";
 
+/* Poppins: la tipografia de obeskay.com, empaquetada para funcionar offline */
+@import "@fontsource/poppins/400.css";
+@import "@fontsource/poppins/500.css";
+@import "@fontsource/poppins/600.css";
+@import "@fontsource/poppins/700.css";
+
 /* ═══════════════════════════════════════════════════════════
-   ONE-SHOT DESIGN SYSTEM - DARK MODE EMERALD
-   Refined for high-fidelity minimalist aesthetic
+   ONE-SHOT DESIGN SYSTEM
+   Marca beskay (obeskay.com), modo oscuro: teal profundo,
+   acento turquesa, cero radios, cero sombras.
    ═══════════════════════════════════════════════════════════*/
-@import "tailwindcss";
 
 @theme {
-    /* === CORE PALETTE - RADIX INSPIRED === */
-    --color-canvas: #050505;       /* OLED Black */
-    --color-surface: #0f0f10;      /* Near Black */
-    --color-surface-muted: #1a1a1c; /* Neutral 900 */
-    --color-surface-elevated: #222226; /* Neutral 850 */
+    /* === SUPERFICIES: teal profundo, no negro neutro === */
+    --color-canvas: #023437;
+    --color-surface: #043c40;
+    --color-surface-muted: #033a3d;
+    --color-surface-elevated: #05464b;
 
-    /* === TEXT === */
-    --color-ink: #f8f8f8;          /* Off-white */
-    --color-ink-muted: #a1a1aa;    /* Neutral 400 */
-    --color-ink-subtle: #71717a;   /* Neutral 500 */
-    --color-ink-inverted: #000000;
+    /* === TEXTO === */
+    --color-ink: #ffffff;
+    --color-ink-muted: rgba(255, 255, 255, 0.66);
+    --color-ink-subtle: rgba(255, 255, 255, 0.45);
+    --color-ink-inverted: #023437;
 
-    /* === BORDERS === */
-    --color-stroke: #27272a;       /* Subtle definition */
-    --color-stroke-subtle: #18181b;
-    --color-stroke-emphasis: #3f3f46;
-    --color-stroke-glow: rgba(52, 211, 153, 0.2); 
+    /* === BORDES: rosa de marca a baja opacidad === */
+    --color-stroke: rgba(236, 204, 201, 0.18);
+    --color-stroke-subtle: rgba(236, 204, 201, 0.09);
+    --color-stroke-emphasis: rgba(236, 204, 201, 0.34);
+    --color-stroke-glow: rgba(63, 183, 196, 0.2);
 
-    /* === SEMANTIC STATUS === */
-    --color-status-ready: #10b981; /* Emerald 500 */
-    --color-status-active: #34d399; /* Emerald 400 */
-    --color-status-warning: #f59e0b; /* Amber */
-    --color-status-error: #ef4444;   /* Red */
+    /* === ESTADO: turquesa de marca, terracota para el error === */
+    --color-status-ready: #3fb7c4;
+    --color-status-active: #5ac8d4;
+    --color-status-warning: #c57a69;
+    --color-status-error: #c57a69;
 
-    /* === ACCENTS === */
-    --color-accent-glow: rgba(16, 185, 129, 0.3);
-    
-    /* === TYPOGRAPHY === */
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --color-accent-glow: rgba(63, 183, 196, 0.28);
+
+    /* === RADIOS: beskay es de esquina recta. Anulamos la escala de
+       Tailwind entera para que ningun componente pueda redondear por
+       descuido. rounded-full sigue disponible para pills y toggles. === */
+    --radius-xs: 0px;
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+    --radius-xl: 0px;
+    --radius-2xl: 0px;
+    --radius-3xl: 0px;
+    --radius-4xl: 0px;
+
+    /* === TIPOGRAFIA === */
+    --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     --font-mono: 'SF Mono', 'Input Mono', 'Fira Code', monospace;
 
-    /* === SHADOWS === */
-    --shadow-subtle: 0 1px 1px rgba(0,0,0,0.4);
-    --shadow-base: 0 4px 12px rgba(0,0,0,0.6);
-    --shadow-elevated: 0 12px 32px rgba(0,0,0,0.8);
-    --shadow-glow: 0 0 20px var(--color-accent-glow);
-    --shadow-glow-active: 0 0 30px rgba(16, 185, 129, 0.4);
+    /* === SOMBRAS: beskay no usa. Solo queda el glow del acento === */
+    --shadow-subtle: none;
+    --shadow-base: none;
+    --shadow-elevated: none;
+    --shadow-glow: 0 0 24px var(--color-accent-glow);
+    --shadow-glow-active: 0 0 32px rgba(90, 200, 212, 0.35);
 
     /* === ANIMATIONS === */
     --animate-reveal: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
