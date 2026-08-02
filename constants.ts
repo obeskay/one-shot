@@ -1,21 +1,19 @@
-import { AIConfig, ProviderConfig, ProviderType } from './types';
+import { PayloadOptions } from './types';
 
-// Deprecated: Providers are now fetched dynamically from backend
-// export const PROVIDERS: ProviderConfig[] = [];
-
-// export const getProviderById = ...
-// export const getModelsByProvider = ...
-
-export const DEFAULT_AI_CONFIG: import('./types').AIConfig = {
-    provider: 'gemini',
-    model: '', // No default model, must be selected
-    apiKey: '',
-    temperature: 0.7,
-    systemInstruction: "You are an expert software engineer. Analyze the context provided and generate optimized code or explanations.",
-    useThinking: false,
-    useGrounding: false,
-    isConfigured: false,
+export const DEFAULT_PAYLOAD_OPTIONS: PayloadOptions = {
+    includeTree: true,
+    includeGraph: true,
+    includeContents: true,
+    maxFileBytes: 256 * 1024,
+    instruction: '',
 };
+
+// Destinos comunes donde se pega el contexto
+export const PASTE_TARGETS = [
+    { id: 'chatgpt', label: 'ChatGPT', url: 'https://chatgpt.com' },
+    { id: 'claude', label: 'Claude', url: 'https://claude.ai/new' },
+    { id: 'kimi', label: 'Kimi', url: 'https://www.kimi.com' },
+];
 
 export const IGNORE_PATTERNS = [
     'node_modules',

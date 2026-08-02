@@ -5,29 +5,21 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 	goruntime "runtime"
-	"strings"
 
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 
-	ctx "shotgun/internal/context"
 	"shotgun/internal/domain"
 	"shotgun/internal/fs"
-	"shotgun/internal/jobs"
-	"shotgun/internal/llm"
-	"shotgun/internal/secrets"
+	"shotgun/internal/payload"
 )
 
 // App estructura principal de la aplicacion Wails
 type App struct {
-	ctx         context.Context
-	scanner     *fs.Scanner
-	jobManager  *jobs.Manager
-	llmService  *llm.Service
-	ctxBuilder  *ctx.Builder
-	secretStore *secrets.Store
-	logger      *slog.Logger
+	ctx     context.Context
+	scanner *fs.Scanner
+	builder *payload.Builder
+	logger  *slog.Logger
 }
 
 // New crea una nueva instancia de la aplicacion
@@ -37,11 +29,8 @@ func New() *App {
 	}))
 
 	return &App{
-		scanner:     fs.NewScanner(),
-		jobManager:  jobs.NewManager(),
-		llmService:  llm.NewService(),
-		secretStore: secrets.NewStore(logger),
-		logger:      logger,
+		scanner: fs.NewScanner(),
+		logger:  logger,
 	}
 }
 
@@ -54,7 +43,6 @@ func (a *App) Startup(wailsCtx context.Context) {
 // Shutdown se llama cuando la aplicacion se cierra
 func (a *App) Shutdown(ctx context.Context) {
 	a.logger.Info("OneShot cerrando")
-	// Cleanup
 }
 
 // ---------------------------------------------------------------------------
@@ -73,9 +61,8 @@ func (a *App) SelectProject() (string, error) {
 		return "", fmt.Errorf("error opening directory dialog: %w", err)
 	}
 
-	// Inicializar context builder con el nuevo path
 	if path != "" {
-		a.ctxBuilder = ctx.NewBuilder(path)
+		a.builder = payload.NewBuilder(path)
 		a.logger.Info("Proyecto seleccionado", "path", path)
 	}
 
@@ -96,8 +83,7 @@ func (a *App) ScanProject(path string) (*domain.TreeSnapshotDTO, error) {
 		return nil, fmt.Errorf("path is not a directory")
 	}
 
-	// Inicializar context builder
-	a.ctxBuilder = ctx.NewBuilder(path)
+	a.builder = payload.NewBuilder(path)
 
 	opts := fs.DefaultScanOptions()
 	snapshot, err := a.scanner.Scan(path, opts)
@@ -121,7 +107,7 @@ func (a *App) ScanProjectWithOptions(path string, useGitignore bool, customIgnor
 		return nil, fmt.Errorf("path is not a directory")
 	}
 
-	a.ctxBuilder = ctx.NewBuilder(path)
+	a.builder = payload.NewBuilder(path)
 
 	opts := fs.ScanOptions{
 		UseGitignore:     useGitignore,
@@ -140,248 +126,68 @@ func (a *App) ScanProjectWithOptions(path string, useGitignore bool, customIgnor
 	return &dto, nil
 }
 
-// ReadFile lee el contenido de un archivo
-func (a *App) ReadFile(relPath string, projectPath string) (string, error) {
-	fullPath := filepath.Join(projectPath, relPath)
-
-	absProject, _ := filepath.Abs(projectPath)
-	absFile, _ := filepath.Abs(fullPath)
-	if len(absFile) < len(absProject) || absFile[:len(absProject)] != absProject {
-		return "", fmt.Errorf("path traversal attempt detected")
-	}
-
-	content, err := os.ReadFile(fullPath)
-	if err != nil {
-		return "", fmt.Errorf("error reading file: %w", err)
-	}
-
-	return string(content), nil
-}
-
-// ReadFileWithLimit lee contenido con limite de bytes
-func (a *App) ReadFileWithLimit(relPath string, projectPath string, maxBytes int64) (string, bool, error) {
-	content, truncated, err := fs.ReadFileContent(projectPath, relPath, maxBytes)
-	if err != nil {
-		return "", false, fmt.Errorf("error reading file: %w", err)
-	}
-	return content, truncated, nil
-}
-
 // GetPlatform retorna informacion de la plataforma
 func (a *App) GetPlatform() string {
 	return goruntime.GOOS
 }
 
 // ---------------------------------------------------------------------------
-// Wails Bound Methods - Job Management
+// Wails Bound Methods - Payload (el corazon de la app)
 // ---------------------------------------------------------------------------
 
-// CancelJob cancela un trabajo en ejecucion
-func (a *App) CancelJob(jobId string) error {
-	a.logger.Info("Cancelando job", "jobId", jobId)
-
-	if !a.jobManager.CancelJob(jobId) {
-		a.logger.Warn("Job no encontrado o ya completado", "jobId", jobId)
-		return fmt.Errorf("job not found or already completed: %s", jobId)
+// BuildPayload arma el bloque de texto listo para pegar en un chatbot
+func (a *App) BuildPayload(projectPath string, relPaths []string, opts payload.Options) (*payload.Result, error) {
+	if a.builder == nil || a.builder.ProjectPath() != projectPath {
+		a.builder = payload.NewBuilder(projectPath)
 	}
 
-	a.logger.Info("Job cancelado exitosamente", "jobId", jobId)
-	return nil
-}
-
-// GetJobStatus obtiene el estado de un job
-func (a *App) GetJobStatus(jobId string) (*domain.JobProgressDTO, error) {
-	job := a.jobManager.GetJob(jobId)
-	if job == nil {
-		return nil, fmt.Errorf("job not found: %s", jobId)
-	}
-	dto := job.ToDTO()
-	return &dto, nil
-}
-
-// ---------------------------------------------------------------------------
-// Wails Bound Methods - Context Building
-// ---------------------------------------------------------------------------
-
-// BuildContext construye el contexto para un prompt
-func (a *App) BuildContext(selection domain.SelectionDTO, options domain.ContextBuildOptionsDTO, projectPath string) (*domain.ContextPayloadDTO, error) {
-	if a.ctxBuilder == nil {
-		a.ctxBuilder = ctx.NewBuilder(projectPath)
-	}
-
-	payload, err := a.ctxBuilder.Build(selection, options)
+	result, err := a.builder.Build(relPaths, opts)
 	if err != nil {
-		return nil, fmt.Errorf("build context failed: %w", err)
+		a.logger.Error("Build de payload fallido", "error", err)
+		return nil, err
 	}
 
-	return payload, nil
-}
-
-// FormatContext formatea el payload de contexto
-func (a *App) FormatContext(payload domain.ContextPayloadDTO) string {
-	if a.ctxBuilder == nil {
-		return ""
-	}
-	return a.ctxBuilder.FormatPayload(&payload)
-}
-
-// ---------------------------------------------------------------------------
-// Wails Bound Methods - LLM
-// ---------------------------------------------------------------------------
-
-// ConfigureLLM configura un provider de LLM con API key
-func (a *App) ConfigureLLM(provider string, apiKey string, baseURL string) error {
-	a.logger.Info("Configurando LLM provider", "provider", provider)
-
-	// Secure Storage Logic
-	if apiKey != "" {
-		// Save new key securely
-		if err := a.secretStore.Set(fmt.Sprintf("%s_api_key", provider), apiKey); err != nil {
-			a.logger.Warn("No se pudo guardar la API key en keyring", "error", err)
-		}
-	} else {
-		// Try to retrieve existing key
-		storedKey, err := a.secretStore.Get(fmt.Sprintf("%s_api_key", provider))
-		if err == nil && storedKey != "" {
-			apiKey = storedKey
-			a.logger.Info("API key recuperada del keyring", "provider", provider)
-		}
-	}
-
-	// Preparar ejecución para la fábrica
-	workDir := ""
-	if a.ctxBuilder != nil {
-		workDir = a.ctxBuilder.ProjectPath()
-	}
-
-	cfg := llm.FactoryConfig{
-		Provider: provider,
-		APIKey:   apiKey,
-		BaseURL:  baseURL,
-		WorkDir:  workDir,
-	}
-
-	// Delegar creación a la fábrica
-	p, err := llm.NewProvider(a.ctx, cfg)
-	if err != nil {
-		a.logger.Error("Error creando provider", "error", err)
-		return err
-	}
-
-	a.llmService.RegisterProvider(domain.ProviderID(provider), p)
-	a.logger.Info("LLM provider configurado exitosamente", "provider", provider)
-	return nil
-}
-
-// GetProviders retorna la lista de providers soportados
-func (a *App) GetProviders() []domain.ProviderDTO {
-	return domain.GetProviderRegistry()
-}
-
-// RunPrompt ejecuta un prompt contra el LLM
-func (a *App) RunPrompt(spec domain.PromptRunSpecDTO) (*domain.PromptRunResultDTO, error) {
-	result, err := a.llmService.Complete(a.ctx, spec)
-	if err != nil {
-		return nil, fmt.Errorf("prompt failed: %w", err)
-	}
+	a.logger.Info("Payload construido",
+		"files", result.Stats.Files,
+		"bytes", result.Stats.Bytes,
+		"tokens", result.Stats.Tokens,
+		"skipped", result.Stats.Skipped)
 	return result, nil
 }
 
-// StreamPrompt ejecuta un prompt con streaming via Wails Events
-func (a *App) StreamPrompt(spec domain.PromptRunSpecDTO) (string, error) {
-	job, jobCtx := a.jobManager.CreateJob(domain.JobKindRunPrompt)
-	a.logger.Info("Iniciando streaming de prompt", "jobId", job.ID, "provider", spec.Provider, "model", spec.Model)
-
-	go func() {
-		a.jobManager.UpdateJob(job.ID, domain.JobStateRunning, "streaming", 0, 0, "")
-
-		tokenCount := 0
-		err := a.llmService.Stream(jobCtx, spec, func(token string) {
-			// Emitir token al frontend via Wails Events
-			wailsRuntime.EventsEmit(a.ctx, "chat:token", token)
-			tokenCount++
-		})
-
-		if err != nil {
-			a.logger.Error("Error en streaming", "jobId", job.ID, "error", err)
-			a.jobManager.CompleteJob(job.ID, err)
-			wailsRuntime.EventsEmit(a.ctx, "chat:error", err.Error())
-		} else {
-			a.logger.Info("Streaming completado", "jobId", job.ID, "tokensEmitted", tokenCount)
-			a.jobManager.CompleteJob(job.ID, nil)
-		}
-
-		wailsRuntime.EventsEmit(a.ctx, "chat:complete", job.ID)
-	}()
-
-	return job.ID, nil
+// CopyToClipboard escribe texto en el portapapeles del sistema.
+// Se hace en Go y no en el webview: navigator.clipboard falla con payloads
+// grandes y sin gesto de usuario directo.
+func (a *App) CopyToClipboard(text string) error {
+	if err := wailsRuntime.ClipboardSetText(a.ctx, text); err != nil {
+		a.logger.Error("Error copiando al portapapeles", "error", err)
+		return fmt.Errorf("no se pudo copiar al portapapeles: %w", err)
+	}
+	a.logger.Info("Copiado al portapapeles", "bytes", len(text))
+	return nil
 }
 
-// StopStream detiene el streaming actual
-func (a *App) StopStream(jobId string) error {
-	return a.CancelJob(jobId)
+// SavePayload guarda el payload en un archivo elegido por el usuario
+func (a *App) SavePayload(text string, suggestedName string) (string, error) {
+	if suggestedName == "" {
+		suggestedName = "context.md"
+	}
+
+	target, err := wailsRuntime.SaveFileDialog(a.ctx, wailsRuntime.SaveDialogOptions{
+		Title:           "Guardar contexto",
+		DefaultFilename: suggestedName,
+	})
+	if err != nil {
+		return "", fmt.Errorf("error abriendo dialogo: %w", err)
+	}
+	if target == "" {
+		return "", nil
+	}
+
+	if err := os.WriteFile(target, []byte(text), 0o644); err != nil {
+		return "", fmt.Errorf("error guardando archivo: %w", err)
+	}
+
+	a.logger.Info("Payload guardado", "path", target)
+	return target, nil
 }
-
-// DetectInstalledCLIs escanea el sistema en busca de CLIs de agentes instalados
-func (a *App) DetectInstalledCLIs() []domain.AgentCLIDTO {
-	knownCLIs := []struct {
-		ID    string
-		Name  string
-		Cmd   string
-		Icon  string
-		Flags string
-	}{
-		{ID: "agy", Name: "Antigravity CLI", Cmd: "agy", Icon: "🚀", Flags: "-p"},
-		{ID: "claude", Name: "Claude Code CLI", Cmd: "claude", Icon: "🧠", Flags: "-p"},
-		{ID: "ccai", Name: "Claude Code AI", Cmd: "ccai", Icon: "⚡", Flags: "-p"},
-		{ID: "codex", Name: "OpenAI Codex CLI", Cmd: "codex", Icon: "🤖", Flags: "-p"},
-		{ID: "gh", Name: "GitHub Copilot CLI", Cmd: "gh", Icon: "🐙", Flags: "copilot"},
-		{ID: "ollama", Name: "Ollama Local CLI", Cmd: "ollama", Icon: "🦙", Flags: "run"},
-	}
-
-	pathEnv := os.Getenv("PATH")
-	homeDir, _ := os.UserHomeDir()
-
-	extraPaths := []string{
-		"/opt/homebrew/bin",
-		"/usr/local/bin",
-		filepath.Join(homeDir, ".local", "bin"),
-		filepath.Join(homeDir, "go", "bin"),
-	}
-
-	for _, p := range extraPaths {
-		if p != "" && !strings.Contains(pathEnv, p) {
-			pathEnv = p + string(os.PathListSeparator) + pathEnv
-		}
-	}
-
-	var results []domain.AgentCLIDTO
-
-	for _, item := range knownCLIs {
-		foundPath := ""
-		for _, dir := range filepath.SplitList(pathEnv) {
-			target := filepath.Join(dir, item.Cmd)
-			if info, err := os.Stat(target); err == nil && !info.IsDir() {
-				foundPath = target
-				break
-			}
-		}
-
-		fullCommand := item.Cmd
-		if item.Flags != "" {
-			fullCommand = fmt.Sprintf("%s %s", item.Cmd, item.Flags)
-		}
-
-		results = append(results, domain.AgentCLIDTO{
-			ID:          item.ID,
-			Name:        item.Name,
-			Command:     fullCommand,
-			Path:        foundPath,
-			IsInstalled: foundPath != "",
-			Icon:        item.Icon,
-		})
-	}
-
-	return results
-}
-

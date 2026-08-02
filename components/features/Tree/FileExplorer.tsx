@@ -70,7 +70,8 @@ export const FileExplorer: React.FC = () => {
             <div className="relative flex items-center bg-surface border border-stroke rounded-lg px-2.5 py-1.5 transition-all focus-within:ring-2 focus-within:ring-status-ready/10 focus-within:border-status-ready/30">
                 <Search className="w-3.5 h-3.5 text-ink-subtle mr-2" />
                 <input
-                    placeholder="Filtrar archivos..."
+                    placeholder="Filtrar archivos... (⌘K)"
+                    data-search-input
                     value={searchQuery}
                     onChange={(e) => dispatch({ type: 'SET_SEARCH', payload: e.target.value })}
                     className="w-full bg-transparent border-none text-[12px] text-ink placeholder:text-ink-subtle/30 focus:ring-0 p-0 font-light"

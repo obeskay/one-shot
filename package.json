@@ -1,7 +1,7 @@
 {
   "name": "one-shot",
   "version": "0.1.0",
-  "description": "Context builder for LLMs - generate optimized structured prompts from your codebase",
+  "description": "Copia tu codebase con grafo de dependencias, listo para pegar en cualquier chatbot",
   "author": "Obed Wook",
   "license": "MIT",
   "repository": {
@@ -9,10 +9,10 @@
     "url": "https://github.com/obeskay/one-shot.git"
   },
   "keywords": [
-    "llm",
-    "ai",
     "context",
-    "prompt-engineering",
+    "codebase",
+    "clipboard",
+    "llm",
     "developer-tools",
     "wails",
     "react"
@@ -30,8 +30,6 @@
     "lucide-react": "^0.561.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

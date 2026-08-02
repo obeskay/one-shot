@@ -1,47 +1,3 @@
-export type ContextStrategy = 'precise' | 'conceptual';
-
-export type ProviderType = 'gemini' | 'anthropic' | 'openai' | 'openrouter' | 'deepseek' | 'local' | 'local-cli';
-
-export interface ProviderConfig {
-  id: ProviderType;
-  name: string;
-  description: string;
-  requiresApiKey: boolean;
-  baseURL?: string;
-  models: ModelConfig[];
-  icon: string;
-}
-
-export interface Model {
-  id: string;
-  name: string;
-  description?: string;
-  maxTokens: number;
-  canThink?: boolean;
-  canSearch?: boolean;
-}
-
-export type ModelConfig = Model;
-
-
-export interface AIConfig {
-  provider: ProviderType;
-  model: string;
-  apiKey: string;
-  baseURL?: string;
-  temperature: number;
-  systemInstruction: string;
-  useThinking: boolean;
-  useGrounding: boolean;
-  isConfigured: boolean;
-}
-
-export interface PromptRunResult {
-  id: string;
-  content: string;
-  duration: number;
-}
-
 export interface FileNode {
   id: string;
   name: string;
@@ -59,70 +15,43 @@ export interface TreeSnapshot {
   scannedAt: string;
 }
 
-export interface FileSummary {
-  fileId: string;
-  originalSize: number;
-  summarySize: number;
-  content: string;
-  isReady: boolean;
+// Opciones de armado del payload (espejo de payload.Options en Go)
+export interface PayloadOptions {
+  includeTree: boolean;
+  includeGraph: boolean;
+  includeContents: boolean;
+  maxFileBytes: number;
+  instruction: string;
 }
 
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: number;
-  isError?: boolean;
+export interface PayloadStats {
+  files: number;
+  skipped: number;
+  truncated: number;
+  bytes: number;
+  tokens: number;
+  externals: number;
 }
 
-export interface AgentCLIDTO {
-  id: string;
-  name: string;
-  command: string;
-  path: string;
-  isInstalled: boolean;
-  icon: string;
+export interface PayloadResult {
+  text: string;
+  stats: PayloadStats;
+  warnings?: string[];
 }
 
-// UI State
 export interface AppState {
   projectPath: string | null;
   tree: TreeSnapshot | null;
   isLoading: boolean;
 
-  // Core Logic
-  strategy: ContextStrategy;
-  aiConfig: AIConfig;
-
-  // Selection
   selectedFileIds: Set<string>;
   expandedFolderIds: Set<string>;
-
-  // Intelligent Cache
-  summaries: Record<string, FileSummary>;
-  processingFiles: Set<string>;
-
   searchQuery: string;
 
-  // View State
-  activeTab: string;
+  options: PayloadOptions;
 
-  // Conversation (unificado)
-  isChatOpen: boolean;
-  chatMessages: ChatMessage[];
-  isChatGenerating: boolean;
-
-  // Intent-First UX
-  intent: string;
-  budgetTokens: number;
-
-  // Dynamic Data
-  providers: ProviderConfig[];
-  detectedCLIs: AgentCLIDTO[];
-  selectedCLIId?: string;
-
-  // Job tracking
-  currentJobId: string | null;
+  payload: PayloadResult | null;
+  isBuilding: boolean;
 }
 
 export interface ToastMessage {
