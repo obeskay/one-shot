@@ -101,7 +101,7 @@ const MockBridge = {
     const text = `# Codebase: mock-project\n\n${relPaths.map(p => `### ${p}\n\n\`\`\`\n// mock\n\`\`\`\n`).join('\n')}`;
     return {
       text,
-      stats: { files: relPaths.length, skipped: 0, truncated: 0, bytes: text.length, tokens: Math.floor(text.length / 4), externals: 0 },
+      stats: { files: relPaths.length, skipped: 0, truncated: 0, binary: 0, bytes: text.length, tokens: Math.floor(text.length / 4), externals: 0 },
     };
   },
 

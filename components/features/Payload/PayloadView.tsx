@@ -50,6 +50,11 @@ export const PayloadView: React.FC = () => {
 
                 <div className="flex items-center gap-4 text-[10px] font-mono text-ink-subtle shrink-0">
                     <span>{selectedFiles.length} archivos</span>
+                    {!!payload?.stats.binary && (
+                        <span title="Imagenes y binarios: se listan, no se copia su contenido">
+                            {payload.stats.binary} binarios
+                        </span>
+                    )}
                     <span>{formatBytes(payload?.stats.bytes ?? estimate.bytes)}</span>
                     <span className="text-status-ready">
                         ~{formatNumber(payload?.stats.tokens ?? estimate.tokens)} tokens

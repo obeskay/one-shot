@@ -17,8 +17,13 @@ No tiene proveedores de IA integrados, no pide API keys, no manda nada a ningún
    Puntos de entrada   ← qué archivos nadie importa
    Deps externas       ← react (23), lucide-react (11)...
    Mapa módulo a módulo ← qué define, qué importa, quién lo usa
+## Recursos binarios   ← imágenes y assets: ruta y peso, nunca sus bytes
 ## Archivos            ← el código, en bloques por lenguaje
 ```
+
+Los archivos no textuales (PNG, fuentes, binarios) se detectan con la heurística de git
+(byte NUL o UTF-8 inválido) y se listan con su peso: aparecen en el árbol para que el
+chatbot sepa que existen, pero su contenido nunca entra al portapapeles.
 
 El grafo se calcula por lenguaje (TypeScript/JavaScript, Go, Python, CSS): resuelve imports relativos,
 `index.*`, paquetes de Go por carpeta, e ignora la stdlib para que la lista de dependencias externas

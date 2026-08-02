@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"io"
 	"os"
 	"time"
 
@@ -160,21 +161,28 @@ func ReadFileContent(rootPath, relPath string, maxBytes int64) (string, bool, er
 		return "", false, err
 	}
 
-	truncated := false
-	size := info.Size()
-	if maxBytes > 0 && size > maxBytes {
-		size = maxBytes
-		truncated = true
+	truncated := maxBytes > 0 && info.Size() > maxBytes
+
+	// Solo leemos hasta el limite: un asset de 50 MB no debe entrar a memoria
+	if !truncated {
+		content, err := os.ReadFile(fullPath)
+		if err != nil {
+			return "", false, err
+		}
+		return string(content), false, nil
 	}
 
-	content, err := os.ReadFile(fullPath)
+	file, err := os.Open(fullPath)
 	if err != nil {
 		return "", false, err
 	}
+	defer file.Close()
 
-	if truncated {
-		content = content[:maxBytes]
+	content := make([]byte, maxBytes)
+	n, err := io.ReadFull(file, content)
+	if err != nil && err != io.ErrUnexpectedEOF {
+		return "", false, err
 	}
 
-	return string(content), truncated, nil
+	return string(content[:n]), true, nil
 }

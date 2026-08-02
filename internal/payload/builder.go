@@ -37,6 +37,7 @@ type Stats struct {
 	Files     int   `json:"files"`
 	Skipped   int   `json:"skipped"`
 	Truncated int   `json:"truncated"`
+	Binary    int   `json:"binary"`
 	Bytes     int64 `json:"bytes"`
 	Tokens    int   `json:"tokens"`
 	Externals int   `json:"externals"`
@@ -47,6 +48,12 @@ type Result struct {
 	Text     string   `json:"text"`
 	Stats    Stats    `json:"stats"`
 	Warnings []string `json:"warnings,omitempty"`
+}
+
+// asset es un archivo no textual: se lista, no se transcribe
+type asset struct {
+	RelPath   string
+	SizeBytes int64
 }
 
 // Builder arma payloads para un proyecto
@@ -81,6 +88,7 @@ func (b *Builder) Build(relPaths []string, opts Options) (*Result, error) {
 	contents := make(map[string]string, len(sorted))
 	truncatedSet := make(map[string]bool)
 	ordered := make([]string, 0, len(sorted))
+	assets := make([]asset, 0)
 
 	for _, rel := range sorted {
 		content, truncated, err := fs.ReadFileContent(b.rootPath, rel, opts.MaxFileBytes)
@@ -89,6 +97,18 @@ func (b *Builder) Build(relPaths []string, opts Options) (*Result, error) {
 			res.Stats.Skipped++
 			continue
 		}
+
+		// Imagenes, fuentes, binarios: se listan, nunca se transcriben
+		if fs.IsBinary([]byte(content)) {
+			size, err := fs.FileSize(b.rootPath, rel)
+			if err != nil {
+				size = int64(len(content))
+			}
+			assets = append(assets, asset{RelPath: rel, SizeBytes: size})
+			res.Stats.Binary++
+			continue
+		}
+
 		contents[rel] = content
 		ordered = append(ordered, rel)
 		if truncated {
@@ -99,7 +119,7 @@ func (b *Builder) Build(relPaths []string, opts Options) (*Result, error) {
 	}
 
 	res.Stats.Files = len(ordered)
-	if res.Stats.Files == 0 {
+	if res.Stats.Files == 0 && len(assets) == 0 {
 		return nil, fmt.Errorf("ningun archivo pudo leerse")
 	}
 
@@ -110,8 +130,12 @@ func (b *Builder) Build(relPaths []string, opts Options) (*Result, error) {
 	projectName := path.Base(b.rootPath)
 
 	sb.WriteString(fmt.Sprintf("# Codebase: %s\n\n", projectName))
-	sb.WriteString(fmt.Sprintf("%d archivos · %s · ~%s tokens aprox.\n",
+	sb.WriteString(fmt.Sprintf("%d archivos de texto · %s · ~%s tokens aprox.",
 		res.Stats.Files, humanBytes(res.Stats.Bytes), humanCount(estimateTokens(res.Stats.Bytes))))
+	if len(assets) > 0 {
+		sb.WriteString(fmt.Sprintf(" · %d binarios listados sin contenido", len(assets)))
+	}
+	sb.WriteString("\n")
 	sb.WriteString("Contexto generado con One-Shot. Todo lo necesario esta en este mensaje.\n\n")
 
 	if strings.TrimSpace(opts.Instruction) != "" {
@@ -121,8 +145,14 @@ func (b *Builder) Build(relPaths []string, opts Options) (*Result, error) {
 	}
 
 	if opts.IncludeTree {
+		treePaths := append([]string(nil), ordered...)
+		for _, a := range assets {
+			treePaths = append(treePaths, a.RelPath)
+		}
+		sort.Strings(treePaths)
+
 		sb.WriteString("## Estructura\n\n```\n")
-		sb.WriteString(renderTree(ordered))
+		sb.WriteString(renderTree(treePaths))
 		sb.WriteString("```\n\n")
 	}
 
@@ -130,7 +160,16 @@ func (b *Builder) Build(relPaths []string, opts Options) (*Result, error) {
 		writeGraph(&sb, g)
 	}
 
-	if opts.IncludeContents {
+	if len(assets) > 0 {
+		sb.WriteString("## Recursos binarios\n\n")
+		sb.WriteString("Existen en el proyecto pero su contenido no es texto (imagenes, fuentes, etc.):\n\n")
+		for _, a := range assets {
+			sb.WriteString(fmt.Sprintf("- `%s` · %s\n", a.RelPath, humanBytes(a.SizeBytes)))
+		}
+		sb.WriteString("\n")
+	}
+
+	if opts.IncludeContents && len(ordered) > 0 {
 		sb.WriteString("## Archivos\n\n")
 		for _, rel := range ordered {
 			sb.WriteString(fmt.Sprintf("### %s\n\n", rel))

@@ -12,9 +12,9 @@ func setupProject(t *testing.T) string {
 	root := t.TempDir()
 
 	files := map[string]string{
-		"src/main.ts": "import { helper } from './lib/helper';\nimport React from 'react';\n\nexport const main = () => helper();\n",
+		"src/main.ts":       "import { helper } from './lib/helper';\nimport React from 'react';\n\nexport const main = () => helper();\n",
 		"src/lib/helper.ts": "export function helper() {\n  return 42;\n}\n",
-		"README.md": "# demo\n",
+		"README.md":         "# demo\n",
 	}
 
 	for rel, content := range files {
@@ -125,5 +125,58 @@ func TestBuild_SinSeleccionFalla(t *testing.T) {
 	b := NewBuilder(setupProject(t))
 	if _, err := b.Build(nil, DefaultOptions()); err == nil {
 		t.Error("esperaba error con seleccion vacia")
+	}
+}
+
+func TestBuild_BinariosSeListanNoSeTranscriben(t *testing.T) {
+	root := setupProject(t)
+
+	// PNG real minimo: firma + byte NUL en el header
+	png := []byte{0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 'I', 'H', 'D', 'R'}
+	if err := os.MkdirAll(filepath.Join(root, "public"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "public/logo.png"), png, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	res, err := NewBuilder(root).Build([]string{"src/main.ts", "public/logo.png"}, DefaultOptions())
+	if err != nil {
+		t.Fatalf("Build fallo: %v", err)
+	}
+
+	if res.Stats.Binary != 1 {
+		t.Errorf("esperaba 1 binario, obtuve %d", res.Stats.Binary)
+	}
+	if res.Stats.Files != 1 {
+		t.Errorf("el binario no debe contar como archivo de texto, obtuve %d", res.Stats.Files)
+	}
+	if strings.Contains(res.Text, "PNG") && strings.Contains(res.Text, "```\n\x89") {
+		t.Error("se transcribieron los bytes del binario")
+	}
+	if !strings.Contains(res.Text, "## Recursos binarios") {
+		t.Error("falta la seccion de recursos binarios")
+	}
+	if !strings.Contains(res.Text, "- `public/logo.png`") {
+		t.Error("el binario debe aparecer listado con su ruta")
+	}
+	// Sigue existiendo en el arbol para que el chatbot sepa que esta ahi
+	if !strings.Contains(res.Text, "logo.png") {
+		t.Error("el binario debe aparecer en la estructura")
+	}
+}
+
+func TestBuild_SoloBinariosNoFalla(t *testing.T) {
+	root := setupProject(t)
+	if err := os.WriteFile(filepath.Join(root, "icon.ico"), []byte{0x00, 0x00, 0x01, 0x00}, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	res, err := NewBuilder(root).Build([]string{"icon.ico"}, DefaultOptions())
+	if err != nil {
+		t.Fatalf("Build fallo: %v", err)
+	}
+	if res.Stats.Binary != 1 || res.Stats.Files != 0 {
+		t.Errorf("stats inesperadas: %+v", res.Stats)
 	}
 }

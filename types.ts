@@ -28,6 +28,7 @@ export interface PayloadStats {
   files: number;
   skipped: number;
   truncated: number;
+  binary: number;
   bytes: number;
   tokens: number;
   externals: number;
