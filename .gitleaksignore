@@ -1,0 +1,3 @@
+# Falso positivo: es un hash de modulo Go (go.sum) pegado en all.md, no una credencial.
+# Formato "h1:<base64>", que gitleaks confunde con generic-api-key por su entropia.
+7d8d92e1cd5329cf0b40f4ab31481cfc166fe4f0:all.md:generic-api-key:4010
