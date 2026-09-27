@@ -94,3 +94,23 @@ func TestClosure_SinSemillasNoExplota(t *testing.T) {
 		t.Errorf("esperaba vacio, obtuve %v", got)
 	}
 }
+
+func TestBuild_ImportSinFromNoSeTragaElSiguiente(t *testing.T) {
+	contents := map[string]string{
+		"index.tsx": "import './index.css';\nimport App from './App';\n",
+		"index.css": "body {}\n",
+		"App.tsx":   "export default function App() {}\n",
+	}
+
+	g := Build(contents)
+
+	for _, n := range g.Files {
+		if n.RelPath == "index.tsx" {
+			if len(n.Imports) != 2 {
+				t.Errorf("esperaba index.css y App.tsx, obtuve %v", n.Imports)
+			}
+			return
+		}
+	}
+	t.Fatal("no se encontro index.tsx")
+}

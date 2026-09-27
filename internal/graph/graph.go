@@ -30,7 +30,9 @@ type Graph struct {
 }
 
 var (
-	reJSImport  = regexp.MustCompile(`(?m)^\s*import\s+(?:[\s\S]*?\s+from\s+)?['"]([^'"]+)['"]`)
+	// La clausula no admite comillas: asi un `import './x.css'` no se extiende
+	// hasta el `from` del import siguiente y se traga su propio spec.
+	reJSImport  = regexp.MustCompile(`(?m)^\s*import\s+(?:[^'"]*?\s+from\s+)?['"]([^'"]+)['"]`)
 	reJSExport  = regexp.MustCompile(`(?m)^\s*export\s+(?:\*|\{[^}]*\})\s+from\s+['"]([^'"]+)['"]`)
 	reJSRequire = regexp.MustCompile(`require\(\s*['"]([^'"]+)['"]\s*\)`)
 	reJSDynamic = regexp.MustCompile(`import\(\s*['"]([^'"]+)['"]\s*\)`)
