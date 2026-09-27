@@ -100,58 +100,6 @@ func (s *Scanner) Scan(rootPath string, opts ScanOptions) (*domain.TreeSnapshot,
 	return snapshot, nil
 }
 
-// ScanAsync escanea de forma asincrona con reporte de progreso
-func (s *Scanner) ScanAsync(rootPath string, opts ScanOptions, onProgress func(current int)) (*domain.TreeSnapshot, error) {
-	info, err := os.Stat(rootPath)
-	if err != nil {
-		return nil, err
-	}
-	if !info.IsDir() {
-		return nil, os.ErrInvalid
-	}
-
-	engine := ignore.New()
-	if opts.UseGitignore {
-		_ = engine.LoadGitignore(rootPath)
-	}
-	if opts.UseCustomIgnore && opts.CustomIgnoreText != "" {
-		engine.LoadCustomPatterns(opts.CustomIgnoreText)
-	}
-
-	walker := NewWalker(
-		WithIgnoreEngine(engine),
-		WithMaxDepth(opts.MaxDepth),
-		WithMaxFiles(opts.MaxFiles),
-	)
-
-	progress := make(chan int, 10)
-
-	// Procesar progreso
-	go func() {
-		for p := range progress {
-			if onProgress != nil {
-				onProgress(p)
-			}
-		}
-	}()
-
-	result := walker.WalkAsync(rootPath, progress)
-	if result.Err != nil {
-		return nil, result.Err
-	}
-
-	project := domain.NewProject(rootPath)
-	snapshot := &domain.TreeSnapshot{
-		Project:   project,
-		Root:      result.Node,
-		Stats:     result.Stats,
-		CreatedAt: time.Now().UTC(),
-		Version:   1,
-	}
-
-	return snapshot, nil
-}
-
 // ReadFileContent lee el contenido de un archivo
 func ReadFileContent(rootPath, relPath string, maxBytes int64) (string, bool, error) {
 	fullPath := rootPath + "/" + relPath
