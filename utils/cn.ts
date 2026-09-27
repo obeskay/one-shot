@@ -1,5 +1,9 @@
 import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+// text-micro es un tamano de letra del @theme. Sin registrarlo, twMerge lo
+// toma por color y descarta el color real (el text-canvas del boton primario).
+const twMerge = extendTailwindMerge({ extend: { theme: { text: ['micro'] } } });
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
