@@ -1,132 +1,151 @@
 <div align="center">
   <img src="build/appicon.png" width="128" alt="One-Shot" />
+
+  # One-Shot
+
+  **Desktop context builder for LLMs — Wails, Go & React.**
+
+  English · [Español](README.es.md)
 </div>
 
-# One-Shot
+Every chatbot needs codebase context. One-Shot builds it on your machine: no API key, no remote server, zero cloud dependencies.
 
-**Lightning-fast desktop context builder for LLMs — Wails, Go y React.**
+One-Shot scans your repository, lets you select the relevant files, and compiles a **single, structured payload** containing your project tree, dependency graph, and source code. Copy it to your system clipboard and paste it into ChatGPT, Claude, Kimi, or any other chatbot.
 
-Copia tu codebase completo, con grafo de dependencias, listo para pegar en cualquier chatbot.
+No bundled AI providers. No API keys. No network telemetry. Just context packaging.
 
-One-Shot escanea tu repositorio, te deja marcar los archivos que importan y arma **un solo mensaje** con la estructura del proyecto, el grafo de imports y el código. Lo copias al portapapeles y lo pegas en ChatGPT, Claude, Kimi o donde sea.
+The interface and the generated payload are in Spanish, so this README quotes the labels exactly as the app shows them.
 
-No tiene proveedores de IA integrados, no pide API keys, no manda nada a ningún servidor. Solo copia — bien.
+---
 
-## Qué genera
+## What It Generates
+
+One-Shot formats your codebase into one hierarchical message:
 
 ```markdown
-# Codebase: mi-proyecto
-53 archivos · 176.3 KB · ~45.1k tokens aprox.
+# Codebase: my-project
 
-## Estructura          ← árbol ASCII de lo seleccionado
+53 archivos de texto · 176.3 KB · ~45.1k tokens aprox.
+Contexto generado con One-Shot. Todo lo necesario esta en este mensaje.
+
+## Objetivo                         ← your goal for the model, if you typed one
+## Estructura                       ← ASCII tree of the selected files
 ## Grafo de dependencias
-   Puntos de entrada   ← qué archivos nadie importa
-   Deps externas       ← react (23), lucide-react (11)...
-   Mapa módulo a módulo ← qué define, qué importa, quién lo usa
-## Recursos binarios   ← imágenes y assets: ruta y peso, nunca sus bytes
-## Archivos            ← el código, en bloques por lenguaje
+   Puntos de entrada                ← files that nothing else in the selection imports
+   Dependencias externas mas usadas ← react (23), lucide-react (11)...
+   Mapa modulo por modulo           ← per file: what it defines, what it imports, who uses it
+## Recursos binarios                ← images and assets: path and size, never raw bytes
+## Archivos                         ← the source code, in fenced blocks per language
 ```
 
-Los archivos no textuales (PNG, fuentes, binarios) se detectan con la heurística de git
-(byte NUL o UTF-8 inválido) y se listan con su peso: aparecen en el árbol para que el
-chatbot sepa que existen, pero su contenido nunca entra al portapapeles.
+- **Binary files are listed, never transcribed**: files are classified by content, git-style: a NUL byte, or more than 10% invalid UTF-8, in the first 8 KB marks a file as binary (images, fonts, compiled artifacts). Binaries appear in the tree and under `Recursos binarios` with their size, so the model knows they exist, but their bytes never reach the clipboard.
+- **Per-language dependency graph**: imports are extracted with per-language patterns for TypeScript/JavaScript, Go, Python, and CSS. Relative TS/JS/CSS imports resolve to project files (including `index.*` and `.js` → `.ts`), and Go imports resolve to the files of the package folder. Python imports are not resolved to files yet: absolute ones are listed as external names and relative ones are skipped. The Go standard library is left out of the external dependency count.
 
-El grafo se calcula por lenguaje (TypeScript/JavaScript, Go, Python, CSS): resuelve imports relativos,
-`index.*`, paquetes de Go por carpeta, e ignora la stdlib para que la lista de dependencias externas
-sea útil de verdad.
+---
 
-## Uso
+## Key Features
 
-1. Abre One-Shot y elige tu repositorio.
-2. Marca archivos o carpetas (`Todo` / `Fuente` / `Config` para selección rápida).
-3. Opcional: escribe el objetivo que quieres que el chatbot resuelva.
-4. **Copiar todo** (`⌘/Ctrl + Enter`) y pega en tu chat.
+- **Transitive dependencies**: select files and press **+ Dependencias**. One-Shot walks the import graph of the whole project and adds every file your selection imports, transitively.
+- **Native clipboard**: copying happens in Go (`runtime.ClipboardSetText`), not in the webview, where `navigator.clipboard` fails on large payloads or without a direct user gesture.
+- **Live token estimate**: roughly one token per 4 bytes, updated as you select (binaries excluded). Above 200k tokens, where most chats reject a single paste, the counter is flagged with a warning.
+- **Section toggles**: switch `Estructura`, `Grafo`, and `Codigo` on or off independently. With `Codigo` off you get an architectural summary that costs few tokens.
+- **Zero cloud footprint**: runs strictly on your machine. Your code never goes through a proxy or a third-party server.
+- **Session persistence**: reopens your last repository, file selection, and options. Files that no longer exist are dropped on rescan.
 
-### + Dependencias
+---
 
-Marca el archivo que te importa y pulsa **+ Dependencias**: One-Shot recorre el grafo
-del proyecto completo y añade todo lo que ese archivo importa, transitivamente. Es la
-forma rápida de armar un contexto que se sostiene solo, sin cazar imports a mano.
+## Usage
 
-### Sesión
+1. Launch One-Shot, press **Abrir Repositorio**, and pick your repository folder.
+2. Tick files or folders, or use the quick filters (`Todo` / `Fuente` / `Config`).
+3. *(Optional)* Type the goal you want the model to work on.
+4. Press **copiar todo** (`⌘/Ctrl + Enter`) and paste the payload into your chat.
 
-Al cerrar y volver a abrir recuperas el último proyecto, la selección y las opciones.
-Las rutas que ya no existan se descartan al reescanear.
+`Vista previa` shows the payload before you copy it, `Guardar .md` writes it to disk, and the ChatGPT, Claude, and Kimi buttons open those chats in your browser. `⌘/Ctrl + K` jumps to the file filter.
 
-Botones extra: `Vista previa` para ver el resultado antes de copiar, `Guardar .md` para dejarlo en disco.
-El contador de tokens se pone en rojo arriba de 200k, donde la mayoría de los chats
-rechazan un pegado de una sola vez.
+### Transitive Context (`+ Dependencias`)
 
-## Opciones
+Select your target file and press **+ Dependencias**. One-Shot follows the full import chain across the project (TS/JS/CSS and Go) and selects every file it depends on, so you don't have to chase imports by hand.
 
-| Sección | Qué incluye |
-| --- | --- |
-| Estructura | Árbol de carpetas de lo seleccionado |
-| Grafo | Imports, quién usa qué, dependencias externas |
-| Código | Contenido completo de cada archivo |
+---
 
-Apagar `Código` y dejar solo `Estructura` + `Grafo` da un resumen arquitectónico muy barato en tokens.
+## Installation & Quickstart
 
-## Instalación
+### Prerequisites
 
-Requisitos: [Go](https://go.dev/) 1.24+, [Node.js](https://nodejs.org/) 20+, [Wails](https://wails.io/) v2.
+- [Go](https://go.dev/) 1.24 or higher
+- [Node.js](https://nodejs.org/) 20.19+ or 22.12+
+- [Wails](https://wails.io/) v2 CLI (`go install github.com/wailsapp/wails/v2/cmd/wails@latest`)
+
+### Build from Source
 
 ```bash
+# Clone the repository
 git clone https://github.com/obeskay/one-shot.git
 cd one-shot
+
+# Install frontend dependencies
 npm install
-wails dev      # desarrollo
-wails build    # binario en build/bin
+
+# Run live development mode
+wails dev
+
+# Build production binary (outputs to build/bin)
+wails build
 ```
 
-## Stack
+---
 
-- **Backend**: Go (escaneo, grafo, armado del payload, portapapeles nativo)
-- **Frontend**: React 19 + TypeScript + Tailwind CSS v4
-- **Shell**: Wails v2
+## Architecture & Tech Stack
 
-El copiado ocurre en Go (`runtime.ClipboardSetText`), no en el webview: `navigator.clipboard` falla con
-payloads de cientos de miles de caracteres.
+- **Backend**: Go 1.24 (directory scanner, pattern-based import graph, payload builder, native OS clipboard)
+- **Frontend**: React 19, TypeScript, Tailwind CSS v4
+- **Desktop Runtime**: Wails v2
 
-## Tests
+```
+one-shot/
+├── main.go               Application entry point & Wails bootstrap
+├── internal/
+│   ├── app/              Wails lifecycle, project state, clipboard bridge
+│   ├── domain/           Core types (Project, FileNode, TreeSnapshot) and their DTOs
+│   ├── fs/               Local filesystem scanner & binary detection heuristics
+│   ├── graph/            Language-specific import extraction (Go, TS/JS, Python, CSS)
+│   ├── ignore/           .gitignore & default exclude rules
+│   └── payload/          Payload assembly & token estimate
+├── components/           React UI components & layout
+└── services/             Wails bridge & session persistence
+```
+
+---
+
+## Verification & Tests
 
 ```bash
+# Run Go unit tests
 go test ./internal/...
+
+# Run frontend typecheck
 npm run typecheck
 ```
 
-## Por que quedo asi de simple
+---
 
-Este repo nacio como un constructor de contexto y, commit a commit, se le fueron
-injertando proveedores de IA: OpenAI, Anthropic, Gemini, un chat con streaming, un
-wizard de API keys, deteccion de CLIs de agentes instalados. La app termino
-lanzando `provider not registered: agy` en la cara del usuario — un id de proveedor
-que la UI ofrecia y el backend nunca habia registrado. Mientras tanto el boton de
-copiar, que era el producto entero, estaba en un componente que ni siquiera se
-montaba en el layout.
+## Design Rationale: Why It Stayed Simple
 
-La correccion no fue arreglar el registro de proveedores. Fue borrarlos: `internal/llm`,
-`internal/secrets`, `internal/jobs`, el wizard, el chat. Menos 24 mil lineas.
+One-Shot began as a focused context builder. Over successive iterations, feature bloat took over: bundled API clients for OpenAI, Anthropic, and Gemini, streaming chat components, API key management wizards, and local CLI agent detectors.
 
-La leccion es de arquitectura, no de estilo. Una herramienta con **una sola
-responsabilidad** — aqui: convertir una seleccion de archivos en un bloque de texto —
-tiene una superficie donde el error es imposible de esconder. Si copia mal, lo ves
-en el portapapeles. Cuando esa misma herramienta ademas habla con cuatro APIs,
-guarda llaves en el keyring, mantiene un chat con streaming y detecta binarios en tu
-PATH, el fallo aparece a tres saltos de donde lo causaste.
+The tipping point arrived when the app threw `provider not registered: agy` at the user: a provider ID the UI offered and the backend never registered. At the same time, the actual "Copy" button, the entire value proposition of the product, lived in a component that was never mounted.
 
-Vale la pena decirlo en terminos de como se trabaja hoy con agentes: **maquinitas
-aisladas**, cada una con un contrato chico y verificable, encadenadas por el humano.
-No un organismo que lo hace todo y en el que la IA tiene que salir a *descubrir* que
-esta roto. Una maquinita que copia bien es un **checkpoint**: entra una seleccion,
-sale un texto, lo pegas donde quieras y ese pegado o funciona o no. Lo que sigue —
-el modelo, el prompt, la conversacion — es problema de otra maquinita, la que ya
-existe y se llama ChatGPT, Claude o Kimi.
+The fix was not patching the provider registry. The fix was deleting it: `internal/llm`, `internal/secrets`, `internal/jobs`, the setup wizard, and the chat UI. **24,000 lines were deleted in a single cut.**
 
-Por eso One-Shot no tiene proveedores de IA. No es minimalismo estetico: es que el
-limite de la herramienta sea el mismo limite donde puedes verificar que hizo su
-trabajo.
+A tool with a single responsibility (turning a file selection into a context block) has no place for hidden errors. If it fails, the failure is visible in your clipboard immediately. Once a tool bundles four external APIs, stores secrets in the OS keyring, streams responses, and probes your shell `$PATH`, failure happens three abstraction layers away from the root cause.
 
-## Licencia
+In modern agentic workflows, value comes from **discrete, verifiable checkpoints** orchestrated by the developer. Input: a selection of files. Output: a structured context block. You paste it where you want; the paste either works or it does not. Downstream inference belongs to the tools built for it (ChatGPT, Claude, Kimi).
 
-MIT. Ver `LICENSE`.
+One-Shot deliberately contains zero AI providers. That boundary ensures that the limits of the software match the exact boundaries where you can verify its work.
+
+---
+
+## License
+
+MIT. See [LICENSE](LICENSE).
