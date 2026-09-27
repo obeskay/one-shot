@@ -31,10 +31,9 @@ export const Toast: React.FC<ToastProps> = ({ type, message, onClose, duration =
   return (
     <div className={cn(
       "relative flex flex-col w-80 overflow-hidden border pointer-events-auto backdrop-blur-md rounded-sm",
-      "animate-in slide-in-from-top-4 duration-300 ease-out",
-      type === 'success' && "bg-background/90 border-primary/20",
-      type === 'error' && "bg-background/90 border-red-500/20",
-      type === 'info' && "bg-background/90 border-border"
+      type === 'success' && "bg-surface-elevated/90 border-status-ready/30",
+      type === 'error' && "bg-surface-elevated/90 border-red-500/20",
+      type === 'info' && "bg-surface-elevated/90 border-stroke"
     )}>
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
@@ -44,16 +43,16 @@ export const Toast: React.FC<ToastProps> = ({ type, message, onClose, duration =
             type === 'error' && "bg-red-500",
             type === 'info' && "bg-blue-500"
           )} />
-          <span className="text-xs font-mono text-primary lowercase">{message}</span>
+          <span className="text-xs font-mono text-ink lowercase">{message}</span>
         </div>
         <button
           onClick={onClose}
-          className="text-secondary hover:text-primary transition-colors duration-150 hover:scale-110 active:scale-95"
+          className="text-ink-muted hover:text-ink transition-colors duration-150 hover:scale-110 active:scale-95"
         >
           <X size={12} />
         </button>
       </div>
-      <div className="h-0.5 bg-border/30">
+      <div className="h-0.5 bg-stroke">
         <div
           className={cn(
             "h-full transition-all duration-75 ease-linear",

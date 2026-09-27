@@ -4,8 +4,8 @@ import { Folder, FolderOpen, FileCode, FileJson, FileType, FileImage, File } fro
 export const FileIcon: React.FC<{ isDir: boolean, expanded: boolean, name: string }> = ({ isDir, expanded, name }) => {
   if (isDir) {
     return expanded
-        ? <FolderOpen size={16} className="text-brand-400 fill-brand-400/20" />
-        : <Folder size={16} className="text-gray-500 group-hover:text-brand-400/70 transition-colors" />;
+        ? <FolderOpen size={16} className="text-status-ready fill-status-ready/20" />
+        : <Folder size={16} className="text-gray-500 group-hover:text-status-ready/70 transition-colors" />;
   }
 
   const ext = name.split('.').pop()?.toLowerCase();
