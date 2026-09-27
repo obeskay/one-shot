@@ -29,6 +29,6 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
       - name: npm audit (production, high+)
         run: npm audit --omit=dev --audit-level=high
