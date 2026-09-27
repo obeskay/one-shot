@@ -2,7 +2,7 @@
   "name": "one-shot",
   "version": "0.1.0",
   "description": "Copia tu codebase con grafo de dependencias, listo para pegar en cualquier chatbot",
-  "author": "Obed Wook",
+  "author": "obeskay",
   "license": "MIT",
   "repository": {
     "type": "git",
