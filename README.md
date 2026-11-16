@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="build/appicon.png" width="128" alt="One-Shot" />
 
   # One-Shot
 
@@ -7,6 +6,12 @@
 
   English · [Español](README.es.md)
 </div>
+
+<p align="center">
+  <img src="docs/media/flow.gif" width="960" alt="One-Shot: a file picked in the tree, its dependencies pulled in, a goal typed, and the payload preview built" />
+  <br />
+  <sub>Recorded from the running app (wails dev) on this repository.</sub>
+</p>
 
 Every chatbot needs codebase context. One-Shot builds it on your machine: no API key, no remote server, zero cloud dependencies.
 

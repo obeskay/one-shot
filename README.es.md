@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="build/appicon.png" width="128" alt="One-Shot" />
 
   # One-Shot
 
@@ -7,6 +6,12 @@
 
   [English](README.md) · Español
 </div>
+
+<p align="center">
+  <img src="docs/media/flow.gif" width="960" alt="One-Shot: se marca un archivo en el árbol, se suman sus dependencias, se escribe el objetivo y se arma la vista previa" />
+  <br />
+  <sub>Grabado de la app corriendo (wails dev) sobre este mismo repositorio.</sub>
+</p>
 
 Todo chatbot necesita contexto de tu código. One-Shot lo arma en tu máquina: sin API key, sin servidor remoto, sin depender de la nube.
 
