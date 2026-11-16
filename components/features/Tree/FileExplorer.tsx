@@ -42,9 +42,6 @@ export const FileExplorer: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full bg-surface-muted/30 font-sans relative overflow-hidden border-r border-stroke">
-      {/* Background Ambience */}
-      <div className="absolute top-0 left-0 w-full h-[300px] bg-status-ready/2 rounded-full blur-[100px] pointer-events-none -translate-y-1/2" />
-
       {/* Header Sticky */}
       <div className="px-4 pt-5 pb-4 space-y-4 shrink-0">
         

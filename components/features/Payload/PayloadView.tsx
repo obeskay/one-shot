@@ -69,7 +69,7 @@ export const PayloadView: React.FC = () => {
                         title={isHuge ? 'Muchos chats rechazan un pegado de este tamano: apaga "Codigo" o reduce la seleccion' : undefined}
                     >
                         {isHuge && <AlertTriangle size={11} />}
-                        ~{formatNumber(tokens)} tokens
+                        ≈{formatNumber(tokens)} tokens
                     </span>
                 </div>
             </header>
@@ -221,7 +221,6 @@ const OptionToggle: React.FC<{
 const EmptyState: React.FC<{ title: string; detail: string }> = ({ title, detail }) => (
     <div className="flex-1 flex flex-col items-center justify-center select-none px-8 text-center">
         <div className="relative mb-6">
-            <div className="absolute inset-0 bg-status-ready/20 blur-[40px] rounded-full" />
             <div className="relative w-14 h-14 rounded-2xl bg-surface-elevated border border-stroke-emphasis flex items-center justify-center">
                 <Copy size={24} strokeWidth={1.5} className="text-status-ready" />
             </div>

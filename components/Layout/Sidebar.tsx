@@ -21,8 +21,6 @@ export const Sidebar: React.FC = () => {
 
     return (
         <aside className="w-16 flex flex-col items-center py-6 border-r border-stroke bg-canvas shrink-0 relative">
-            <div className="absolute top-0 left-0 w-full h-[200px] bg-status-ready/5 rounded-full blur-[80px] pointer-events-none" />
-
             <div className="mb-10 relative">
                 <div className="relative w-10 h-10 flex items-center justify-center bg-surface-elevated rounded-xl shadow-base border border-stroke">
                     <Box size={18} className="text-status-ready" strokeWidth={2} />

@@ -23,7 +23,6 @@
     --color-stroke: rgba(236, 204, 201, 0.18);
     --color-stroke-subtle: rgba(236, 204, 201, 0.09);
     --color-stroke-emphasis: rgba(236, 204, 201, 0.34);
-    --color-stroke-glow: rgba(63, 183, 196, 0.2);
 
     /* === ESTADO: turquesa de marca, terracota para el error === */
     --color-status-ready: #3fb7c4;
@@ -31,7 +30,6 @@
     --color-status-warning: #c57a69;
     --color-status-error: #c57a69;
 
-    --color-accent-glow: rgba(63, 183, 196, 0.28);
 
     /* === RADIOS: beskay es de esquina recta. Anulamos la escala de
        Tailwind entera para que ningun componente pueda redondear por
@@ -50,26 +48,23 @@
 
     /* === TIPOGRAFIA === */
     --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    --font-mono: 'SF Mono', 'Input Mono', 'Fira Code', monospace;
+    --font-mono: ui-monospace, 'SF Mono', Menlo, 'Fira Code', monospace;
 
     --text-micro: 0.625rem;
     --text-micro--line-height: 1.4;
     --text-micro--letter-spacing: 0.1em;
     --text-micro--font-weight: 500;
 
-    /* === SOMBRAS: beskay no usa. Solo queda el glow del acento === */
+    /* === SOMBRAS: ninguna; la elevacion sale del borde === */
     --shadow-subtle: none;
     --shadow-base: none;
     --shadow-elevated: none;
-    --shadow-glow: 0 0 24px var(--color-accent-glow);
-    --shadow-glow-active: 0 0 32px rgba(90, 200, 212, 0.35);
 
     /* === ANIMATIONS === */
     --animate-reveal: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     --animate-fade-in: fadeIn 0.4s ease-out forwards;
     --animate-slide-up: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     --animate-pop-in: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    --animate-pulse-glow: pulseGlow 2s ease-in-out infinite;
 
     --transition-duration-normal: 300ms;
     --transition-duration-slow: 500ms;
@@ -93,11 +88,6 @@
     @keyframes popIn {
         from { opacity: 0; transform: scale(0.95); }
         to { opacity: 1; transform: scale(1); }
-    }
-
-    @keyframes pulseGlow {
-        0%, 100% { opacity: 1; box-shadow: 0 0 20px var(--color-accent-glow); }
-        50% { opacity: 0.7; box-shadow: 0 0 10px var(--color-accent-glow); }
     }
 }
 
@@ -152,28 +142,6 @@ body {
     box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px var(--color-stroke-emphasis);
 }
 
-.premium-glow {
-    position: relative;
-    overflow: hidden;
-}
-
-.premium-glow::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at center, var(--color-accent-glow) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    pointer-events: none;
-}
-
-.premium-glow:hover::after {
-    opacity: 0.1;
-}
-
 /* Typography Overrides */
 .prose-custom {
     color: var(--color-ink-muted);
@@ -187,4 +155,13 @@ body {
     padding: 0.1em 0.3em;
     border-radius: 4px;
     font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

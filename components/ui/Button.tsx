@@ -18,7 +18,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const variants: Record<ButtonVariant, string> = {
   primary: cn(
     'bg-status-ready text-canvas border border-transparent',
-    'hover:bg-status-active hover:shadow-glow',
+    'hover:bg-status-active',
     'active:scale-[0.98]',
     'shadow-sm'
   ),
